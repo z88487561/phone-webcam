@@ -3,211 +3,133 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>手機變網路攝影機（QR 信令原型）</title>
+<title>手機變網路攝影機（掃碼即連）</title>
 <style>
 :root{--bg:#f6f7f9;--fg:#1a1d21;--card:#fff;--bd:#d9dde3;--ac:#1976d2;--mut:#6b7280}
 @media(prefers-color-scheme:dark){:root{--bg:#111418;--fg:#e8eaed;--card:#1b2026;--bd:#2f3640;--ac:#64b5f6;--mut:#9aa3ad}}
 *{box-sizing:border-box}
-body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:12px;max-width:720px;margin:auto}
+body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:12px;max-width:760px;margin:auto}
 h1{font-size:18px;margin:4px 0 10px}
-.tabs{display:flex;gap:8px;margin-bottom:10px}
-.tabs button{flex:1}
-button{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);cursor:pointer}
-button.on,button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
-.card h2{font-size:14px;margin:0 0 8px}
-video{width:100%;background:#000;border-radius:8px;max-height:60vh}
-textarea{width:100%;height:70px;font:12px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:6px}
-.qr{max-width:340px;margin:8px auto;background:#fff;border-radius:8px;padding:4px}
+video{width:100%;background:#000;border-radius:8px;max-height:70vh}
+button,select{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+.qr{max-width:300px;margin:8px auto;background:#fff;border-radius:8px;padding:4px}
 .qr svg{display:block;width:100%;height:auto}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
-.mut{color:var(--mut);font-size:13px}
+.mut{color:var(--mut);font-size:13px;word-break:break-all}
 #st{font:13px monospace;white-space:pre-wrap}
 .hide{display:none}
 </style>
 </head>
 <body>
-<h1>📷 手機變網路攝影機（原型）</h1>
-<div class="tabs"><button id="tS" class="on">手機（發送端）</button><button id="tV">電腦（觀看端）</button></div>
+<h1 id="ttl">📷 手機變網路攝影機</h1>
 
-<!-- 發送端 -->
-<section id="S">
-  <div class="card"><h2>① 開啟相機</h2>
-    <video id="sv" autoplay muted playsinline></video>
-    <div class="row">
-      <select id="face"><option value="environment">後鏡頭</option><option value="user">前鏡頭</option></select>
-      <button id="sCam" class="p">開啟相機</button>
-    </div>
-  </div>
-  <div class="card"><h2>② 產生 Offer，給電腦掃描／貼上</h2>
-    <button id="sOffer">產生 Offer</button>
-    <div id="sQR" class="qr hide"></div>
-    <textarea id="sOfferTxt" readonly class="hide"></textarea>
-    <button id="sCopy" class="hide">複製文字</button>
-  </div>
-  <div class="card"><h2>③ 取得電腦的 Answer</h2>
-    <div class="mut">把相機對準電腦螢幕上的 Answer QR，或貼上文字。</div>
-    <div class="row"><button id="sScan">用相機掃描 Answer</button></div>
-    <textarea id="sAns" placeholder="貼上 Answer 文字"></textarea>
-    <button id="sApply">套用 Answer</button>
-  </div>
-</section>
-
-<!-- 觀看端 -->
+<!-- 電腦（觀看端） -->
 <section id="V" class="hide">
-  <div class="card"><h2>① 輸入手機的 Offer</h2>
-    <textarea id="vOff" placeholder="貼上 Offer 文字"></textarea>
-    <div class="row"><button id="vApply" class="p">產生 Answer</button><button id="vScan">用電腦鏡頭掃描 Offer</button></div>
-    <video id="vscan" class="hide" autoplay muted playsinline style="max-height:200px"></video>
+  <div class="card" id="pair">
+    <div>用手機<b>相機 App 掃描</b>這個 QR，打開連結即自動連線：</div>
+    <div id="qr" class="qr"></div>
+    <div id="lnk" class="mut"></div>
   </div>
-  <div class="card"><h2>② 把 Answer 給手機</h2>
-    <div id="vQR" class="qr hide"></div>
-    <textarea id="vAnsTxt" readonly class="hide"></textarea>
-    <button id="vCopy" class="hide">複製文字</button>
-  </div>
-  <div class="card"><h2>③ 即時畫面</h2>
-    <video id="rv" autoplay muted playsinline controls></video>
+  <div class="card"><video id="rv" autoplay muted playsinline controls></video></div>
+</section>
+
+<!-- 手機（發送端） -->
+<section id="S" class="hide">
+  <div class="card"><video id="sv" autoplay muted playsinline></video>
+    <p><select id="face"><option value="environment">後鏡頭</option><option value="user">前鏡頭</option></select></p>
   </div>
 </section>
 
-<div class="card"><div id="st">狀態：等待中</div></div>
-<p class="mut">需在 HTTPS（或 localhost）下開啟，手機相機才會被允許。純 P2P，不經任何伺服器。</p>
+<div class="card"><div id="st">狀態：初始化</div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-let pc,stream,stopScan=null,wl=null,statsT=null;
 const log=m=>{$('#st').textContent='狀態：'+m};
+const CFG={config:{iceServers:[]}}; // 只用區網 host candidate；要跨網路再加 STUN/TURN
+const target=location.hash.slice(1);
+let stream,call,peer,wl;
 
-// --- 壓縮 + base64url ---
-const b64=u=>btoa(String.fromCharCode(...u)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
-async function pack(d){
-  const st=new Blob([JSON.stringify(d)]).stream().pipeThrough(new CompressionStream('deflate-raw'));
-  return b64(new Uint8Array(await new Response(st).arrayBuffer()));
-}
-async function unpack(t){
-  const st=new Blob([unb64(t.trim())]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-  return JSON.parse(await new Response(st).text());
-}
-
-// --- QR ---
-function showQR(el,text){
-  el.classList.remove('hide');
-  try{const q=qrcode(0,'L');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true});}
-  catch(e){el.textContent='資料過長，無法產生 QR，請改用文字複製';}
-}
-function startScan(video,cb){
-  const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
-  const t=setInterval(()=>{
-    if(video.readyState<2||!video.videoWidth)return;
-    c.width=video.videoWidth;c.height=video.videoHeight;x.drawImage(video,0,0);
-    const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height);
-    if(r&&r.data){stop();cb(r.data);}
-  },250);
-  const stop=()=>{clearInterval(t);stopScan=null;};
-  stopScan=stop;
-}
-
-// --- WebRTC 共用 ---
-function newPC(){
-  if(pc)pc.close();
-  pc=new RTCPeerConnection({iceServers:[]}); // 區網：不需 STUN/TURN
-  pc.onconnectionstatechange=()=>{log('連線：'+pc.connectionState);if(pc.connectionState==='connected')watchStats();};
-  return pc;
-}
-function gathered(){
-  return new Promise(r=>{
-    if(pc.iceGatheringState==='complete')return r();
-    pc.addEventListener('icegatheringstatechange',()=>pc.iceGatheringState==='complete'&&r());
-    setTimeout(r,3000);
-  });
-}
-function watchStats(){
-  clearInterval(statsT);
-  statsT=setInterval(async()=>{
+function watch(pc){
+  setInterval(async()=>{
+    if(!pc)return;
     const s=await pc.getStats();let t='連線：'+pc.connectionState;
     s.forEach(r=>{
-      if(r.type==='inbound-rtp'&&r.kind==='video')t+=`\n接收 ${r.frameWidth||'?'}x${r.frameHeight||'?'} @ ${Math.round(r.framesPerSecond||0)}fps｜封包 ${r.packetsReceived||0}｜位元組 ${r.bytesReceived||0}｜已解碼 ${r.framesDecoded||0}｜丟棄 ${r.framesDropped||0}`;
-      if(r.type==='outbound-rtp'&&r.kind==='video')t+=`\n傳送 ${r.frameWidth||'?'}x${r.frameHeight||'?'} @ ${Math.round(r.framesPerSecond||0)}fps｜位元組 ${r.bytesSent||0}｜編碼 ${r.encoderImplementation||'?'}`;
+      if(r.type==='inbound-rtp'&&r.kind==='video')t+=`\n接收 ${r.frameWidth||'?'}x${r.frameHeight||'?'} @ ${Math.round(r.framesPerSecond||0)}fps`;
+      if(r.type==='outbound-rtp'&&r.kind==='video')t+=`\n傳送 ${r.frameWidth||'?'}x${r.frameHeight||'?'} @ ${Math.round(r.framesPerSecond||0)}fps`;
       if(r.type==='candidate-pair'&&r.nominated&&r.currentRoundTripTime!=null)t+=`\nRTT ${Math.round(r.currentRoundTripTime*1000)}ms`;
     });
     log(t);
   },1000);
 }
 
-// --- 分頁 ---
-function tab(s){
-  $('#S').classList.toggle('hide',!s);$('#V').classList.toggle('hide',s);
-  $('#tS').classList.toggle('on',s);$('#tV').classList.toggle('on',!s);
+// ===== 電腦端 =====
+function viewer(){
+  $('#V').classList.remove('hide');
+  let id;try{id=localStorage.getItem('pwcam-id');}catch(e){}
+  if(!id){id='pwcam-'+Math.random().toString(36).slice(2,12);try{localStorage.setItem('pwcam-id',id);}catch(e){}}
+  peer=new Peer(id,CFG);
+  peer.on('open',()=>{
+    const url=location.origin+location.pathname+'#'+id;
+    try{const q=qrcode(0,'M');q.addData(url);q.make();$('#qr').innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true});}catch(e){}
+    $('#lnk').textContent=url;log('等待手機連線…（此連結固定，可在手機加入書籤）');
+  });
+  peer.on('call',c=>{
+    if(call)call.close();
+    call=c;c.answer();
+    c.on('stream',s=>{const v=$('#rv');v.srcObject=s;v.play().catch(()=>{});$('#pair').classList.add('hide');watch(c.peerConnection);});
+    c.on('close',()=>{log('手機已斷線，等待重新連線…');$('#pair').classList.remove('hide');});
+  });
+  peer.on('disconnected',()=>peer.reconnect());
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'){try{localStorage.removeItem('pwcam-id');}catch(x){}log('ID 被占用（可能開了兩個分頁），請重新整理');}
+    else log('錯誤：'+e.type);
+  });
 }
-$('#tS').onclick=()=>tab(true);$('#tV').onclick=()=>tab(false);
-const copy=(t)=>navigator.clipboard.writeText(t).then(()=>log('已複製'));
 
-// ===== 發送端（手機）=====
-$('#sCam').onclick=async()=>{
-  try{
-    if(stream)stream.getTracks().forEach(t=>t.stop());
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:$('#face').value},width:{ideal:1280},height:{ideal:720}},audio:false});
-    $('#sv').srcObject=stream;
-    try{wl=await navigator.wakeLock.request('screen');}catch(e){}
-    log('相機已開啟');
-  }catch(e){log('相機失敗：'+e.message+(isSecureContext?'':'（非 HTTPS）'));}
-};
-$('#sOffer').onclick=async()=>{
-  if(!stream)return log('請先開啟相機');
-  newPC();stream.getTracks().forEach(t=>pc.addTrack(t,stream));
-  await pc.setLocalDescription(await pc.createOffer());
-  log('收集 ICE 中…');await gathered();
-  const txt=await pack(pc.localDescription);
-  showQR($('#sQR'),txt);
-  const ta=$('#sOfferTxt');ta.value=txt;ta.classList.remove('hide');$('#sCopy').classList.remove('hide');
-  log(`Offer 已產生（${txt.length} 字元）`);
-};
-$('#sCopy').onclick=()=>copy($('#sOfferTxt').value);
-async function applyAnswer(t){
-  try{await pc.setRemoteDescription(await unpack(t));log('Answer 已套用，連線中…');}
-  catch(e){log('Answer 無效：'+e.message);}
+// ===== 手機端 =====
+async function getCam(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:$('#face').value},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});
+  $('#sv').srcObject=stream;
+  return stream;
 }
-$('#sApply').onclick=()=>pc?applyAnswer($('#sAns').value):log('請先產生 Offer');
-$('#sScan').onclick=()=>{
-  if(!pc)return log('請先產生 Offer');
-  if(stopScan)stopScan();
-  log('掃描中，請對準電腦上的 Answer QR…');
-  startScan($('#sv'),applyAnswer);
-};
+async function boost(c){
+  try{
+    const sn=c.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+    const p=sn.getParameters();if(!p.encodings||!p.encodings.length)p.encodings=[{}];
+    p.encodings[0].maxBitrate=4e6;p.degradationPreference='maintain-resolution';
+    await sn.setParameters(p);
+  }catch(e){}
+}
+function connect(){
+  if(call&&call.open)return;
+  log('連線電腦中…');
+  call=peer.call(target,stream);
+  call.on('stream',()=>{});
+  call.on('close',()=>{log('連線中斷，重試中…');});
+  const t=setInterval(()=>{ if(call.peerConnection){clearInterval(t);boost(call);watch(call.peerConnection);} },500);
+  setTimeout(()=>clearInterval(t),15000);
+}
+async function sender(){
+  $('#S').classList.remove('hide');$('#ttl').textContent='📱 發送中';
+  try{await getCam();}catch(e){return log('相機失敗：'+e.message+(isSecureContext?'':'（需 HTTPS）'));}
+  const lock=async()=>{try{wl=await navigator.wakeLock.request('screen');}catch(e){}};
+  lock();document.addEventListener('visibilitychange',()=>{if(!document.hidden)lock();});
+  peer=new Peer(CFG);
+  peer.on('open',connect);
+  peer.on('disconnected',()=>peer.reconnect());
+  peer.on('error',e=>{log('錯誤：'+e.type+'，3 秒後重試');if(e.type==='peer-unavailable')setTimeout(connect,3000);});
+  setInterval(()=>{if(peer.open&&!(call&&call.open))connect();},4000); // 自動重連
+  $('#face').onchange=async()=>{
+    await getCam();
+    const sn=call&&call.peerConnection&&call.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+    if(sn)sn.replaceTrack(stream.getVideoTracks()[0]);
+  };
+}
 
-// ===== 觀看端（電腦）=====
-async function applyOffer(t){
-  try{
-    const offer=await unpack(t);
-    newPC();
-    pc.ontrack=e=>{
-      const v=$('#rv');
-      v.srcObject=e.streams[0]||new MediaStream([e.track]);
-      const go=()=>v.play().catch(err=>log('播放被擋：'+err.message+'（請按影片播放鍵）'));
-      go();e.track.onunmute=go;
-    };
-    await pc.setRemoteDescription(offer);
-    await pc.setLocalDescription(await pc.createAnswer());
-    log('收集 ICE 中…');await gathered();
-    const txt=await pack(pc.localDescription);
-    showQR($('#vQR'),txt);
-    const ta=$('#vAnsTxt');ta.value=txt;ta.classList.remove('hide');$('#vCopy').classList.remove('hide');
-    log(`Answer 已產生（${txt.length} 字元），請給手機`);
-  }catch(e){log('Offer 無效：'+e.message);}
-}
-$('#vApply').onclick=()=>applyOffer($('#vOff').value);
-$('#vCopy').onclick=()=>copy($('#vAnsTxt').value);
-$('#vScan').onclick=async()=>{
-  try{
-    const s=await navigator.mediaDevices.getUserMedia({video:true});
-    const v=$('#vscan');v.srcObject=s;v.classList.remove('hide');
-    startScan(v,async t=>{s.getTracks().forEach(x=>x.stop());v.classList.add('hide');$('#vOff').value=t;applyOffer(t);});
-    log('掃描中，請對準手機上的 Offer QR…');
-  }catch(e){log('電腦鏡頭失敗：'+e.message);}
-};
+target?sender():viewer();
 </script>
 </body>
 </html>
