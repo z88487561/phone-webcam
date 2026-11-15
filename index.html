@@ -16,34 +16,46 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,"Not
 header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd)}
 h1{font-size:17px;margin:0;flex:1}h2{font-size:15px;margin:0 0 8px}
 button,input,select{font:inherit;color:var(--fg);background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:9px 12px}
-button:focus-visible,input:focus-visible{outline:2px solid var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac)}
 button.p{background:var(--ac);border-color:var(--ac);color:#06201d}
 button.r{background:var(--red);border-color:var(--red);color:#fff}
-main{padding:12px;max-width:820px;margin:auto}
+main{padding:12px;max-width:900px;margin:auto}
 .card{background:var(--c);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
 video{width:100%;background:#000;border-radius:12px;max-height:66vh;display:block;margin-bottom:10px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--mut);display:inline-block}
 .dot.on{background:var(--ac)}.dot.m{background:var(--red)}
 .hide{display:none!important}
-dialog{background:var(--c);color:var(--fg);border:1px solid var(--bd);border-radius:12px;width:min(520px,94vw)}
+dialog{background:var(--c);color:var(--fg);border:1px solid var(--bd);border-radius:12px;width:min(540px,94vw);max-height:92vh}
 dialog::backdrop{background:#000a}
 .qr{max-width:240px;margin:8px auto;background:#fff;border-radius:8px;padding:4px}.qr svg{display:block;width:100%;height:auto}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000e;padding:8px 14px;border-radius:20px;z-index:9;max-width:90vw}
-#dim{position:fixed;inset:0;background:#000;z-index:8;display:flex;align-items:center;justify-content:center;color:#2a2a2a}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000e;padding:8px 14px;border-radius:20px;z-index:99;max-width:90vw}
+#dim{position:fixed;inset:0;background:#000;z-index:98;display:flex;align-items:center;justify-content:center;color:#2a2a2a}
 .mut{color:var(--mut);font-size:13px;word-break:break-all}
 .ev{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
 label{display:block;margin:10px 0 3px}
-input[type=text],input:not([type]){width:100%}
+input[type=text],input:not([type]),select{width:100%}
+input[type=range]{width:100%;padding:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:10px}
 .tile{position:relative;background:#000;border-radius:12px;overflow:hidden;cursor:pointer;aspect-ratio:16/9;border:2px solid transparent}
 .tile.f{grid-column:1/-1;aspect-ratio:auto;border-color:var(--ac);min-height:160px}
 .tile video{width:100%;height:100%;object-fit:contain;max-height:none;margin:0;border-radius:0}
 .tile.f video{height:auto;max-height:62vh}
-.tile .ov{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;align-items:center;padding:6px 8px;background:linear-gradient(#000b,#0000);font-size:13px}
+.tile .ov{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;align-items:center;padding:6px 8px;background:linear-gradient(#000b,#0000);font-size:13px;flex-wrap:wrap}
 .tile .ov button{padding:2px 8px}
-.tile .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);background:#000}
-input[type=range]{width:100%;padding:0}
+.tile .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);background:#000;text-align:center;padding:8px}
+.tile .st{position:absolute;left:6px;bottom:4px;font-size:11px;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
+.grid[data-n="2"]{grid-template-columns:repeat(2,1fr)}
+.grid[data-n="4"]{grid-template-columns:repeat(2,1fr)}
+.grid[data-n="9"]{grid-template-columns:repeat(3,1fr)}
+@media(max-width:600px){.grid[data-n="2"]{grid-template-columns:1fr}.grid[data-n="9"]{grid-template-columns:repeat(2,1fr)}}
+#grid:fullscreen{background:var(--bg);padding:8px;overflow:auto;align-content:center}
+.tile .pz{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000c;text-align:center;padding:8px}
+.tile .ov button{padding:2px 6px}
+#mkw{position:relative;line-height:0}#mkc{width:100%;background:#000;border-radius:8px}
+.mg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(6,1fr)}
+.mg i{border:1px solid #fff5;cursor:pointer}.mg i.x{background:#ff5a4f99}
+#hstat{white-space:pre-wrap;font-size:13px;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -56,20 +68,26 @@ input[type=range]{width:100%;padding:0}
 <section id="cam" class="hide">
   <video id="pv" autoplay muted playsinline></video>
   <div class="card"><span class="dot" id="md"></span> <b id="cs">待機</b> <span class="mut" id="cinfo"></span>
+    <div id="hstat"></div>
     <div id="pairs" style="margin-top:8px"></div>
-    <div class="row"><button class="p" id="cGo">開始守候</button><button id="cScan">📷 掃描配對 QR</button><button id="cEv">錄影事件</button><button id="cDim">省電螢幕</button></div>
+    <div class="row"><button class="p" id="cGo">開始守候</button><button id="cScan">📷 掃描配對 QR</button><button id="cEv">錄影事件</button><button id="cDim">全黑待機</button></div>
     <div class="row"><input id="addin" placeholder="或貼上檢視器的配對連結" style="flex:1"><button id="addb">加入</button></div></div>
 </section>
 
 <section id="vwr" class="hide">
   <div class="row"><b id="vcount" style="flex:1"></b><button id="vAdd">＋ 新增攝影機</button></div>
   <div class="card" id="pbox"><h2>新增攝影機</h2>
-    <div class="mut">在要當攝影機的手機上，用相機 App 掃描這個 QR（或在攝影機頁按「掃描配對 QR」）。</div>
-    <div id="pqr" class="qr"></div><input id="plk" readonly>
+    <div class="mut">用要當攝影機的手機相機 App 掃描（或在攝影機頁按「掃描配對 QR」）。配對碼 5 分鐘內有效、只能用一次。</div>
+    <div id="pqr" class="qr"></div><div class="mut" id="pexp"></div><input id="plk" readonly>
     <div class="row"><button id="pcp" class="p">複製連結</button></div></div>
+  <div class="row hide" id="gbar"></div>
+  <div class="row"><select id="vSort" style="width:auto" aria-label="排序"><option value="manual">手動排序</option><option value="name">名稱</option><option value="online">在線優先</option><option value="recent">最近連線</option></select>
+    <select id="vLay" style="width:auto" aria-label="分割"><option value="0">自動</option><option value="2">2 分割</option><option value="4">4 分割</option><option value="9">9 分割</option></select>
+    <button id="vAll">▶ 全部觀看</button><button id="vNone">⏸ 全部暫停</button><button id="vFs">⛶ 全螢幕</button></div>
   <div class="grid" id="grid"></div>
+  <div class="row hide" id="pager" style="justify-content:center"><button id="pgP">‹ 上一頁</button><span id="pgT"></span><button id="pgN">下一頁 ›</button></div>
   <div class="card hide" id="ctl"><b id="ctlname"></b>
-    <div class="row"><button id="bTalk">🎤 按住對講</button><button id="bSnap">📸 拍照</button><button id="bTorch" class="hide">🔦</button><button id="bSw">🔄 鏡頭</button><button id="bMute">🔊</button><button id="bFs">⛶</button><button id="bEv">🎞️ 錄影</button></div>
+    <div class="row"><button id="bTalk">🎤 按住對講</button><button id="bSnap">📸 拍照</button><button id="bTorch" class="hide">🔦 手電筒：關</button><button id="bSw">🔄 切換鏡頭</button><button id="bMute">🔊 聲音</button><button id="bFs">⛶ 全螢幕</button><button id="bEv">🎞️ 錄影</button><button id="bRst">♻️ 重啟攝影機</button></div>
     <input type="range" id="zm" class="hide" aria-label="縮放"></div>
 </section>
 </main>
@@ -77,18 +95,34 @@ input[type=range]{width:100%;padding:0}
 <dialog id="sd"><h2>設定</h2>
   <div id="sCamF">
     <label for="sName">攝影機名稱</label><input id="sName">
+    <label for="sLens">鏡頭</label><select id="sLens"></select>
+    <label><input type="checkbox" id="sMic"> 啟用麥克風（串流與錄影收音）</label>
     <label><input type="checkbox" id="sMot"> 動態偵測</label>
     <label for="sSens">靈敏度</label><input type="range" id="sSens" min="1" max="100">
-    <label><input type="checkbox" id="sRec"> 偵測到動態時錄影（保留最近 30 段）</label>
-    <label for="sNtfy">ntfy 通知主題（選填，離線時推播到手機）</label><input id="sNtfy" placeholder="例：my-cam-8f3k">
+    <label for="sConf">連續確認次數（每次 0.5 秒，避免單張誤判）</label><select id="sConf"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    <label for="sTail">動態結束後再錄幾秒</label><select id="sTail"><option>5</option><option>10</option><option>20</option><option>30</option><option>60</option></select>
+    <div class="row"><button id="sMask">🚫 設定忽略區域（窗戶、電視…）</button></div>
+    <label><input type="checkbox" id="sRec"> 偵測到動態時錄影（含事件前約 3～6 秒）</label>
+    <label for="sRq">錄影品質（碼率）</label><select id="sRq"><option value="720">720p 高</option><option value="480">480p 中</option><option value="low">低耗能</option></select>
+    <label for="sMax">錄影容量上限（超過自動刪最舊）</label><select id="sMax"><option>100</option><option>250</option><option>500</option><option>1000</option><option>2000</option></select>
+    <div class="mut" id="sStore"></div>
+    <label for="sNtfy">ntfy 通知主題（選填）</label><input id="sNtfy" placeholder="例：my-cam-8f3k">
   </div>
-  <div id="sVwrF"><div class="row"><button id="sPin">重新產生配對碼（舊攝影機需重新配對）</button></div></div>
+  <div id="sVwrF">
+    <label><input type="checkbox" id="sTalk"> 啟用對講（使用這台的麥克風）</label>
+    <div class="row"><button id="sPin">立即重新產生配對碼</button></div>
+  </div>
   <label><input type="checkbox" id="sWan"> 允許跨網路（使用 STUN；嚴格 NAT 需自備 TURN）</label>
   <div class="row"><button id="sRole">切換角色</button><button id="sClose" class="p">完成</button></div>
 </dialog>
+<dialog id="mkd"><h2>忽略區域</h2><div class="mut">點格子標記為忽略（紅色），這些區域的變化不會觸發動態。</div>
+  <div id="mkw"><canvas id="mkc"></canvas><div class="mg" id="mkg"></div></div>
+  <div class="row"><button id="mkclr">全部清除</button><button id="mkok" class="p">完成</button></div></dialog>
 <dialog id="scd"><h2>掃描檢視器上的 QR</h2><video id="scv" autoplay muted playsinline></video><div class="row"><button id="scx">取消</button></div></dialog>
-<dialog id="evd"><h2>錄影事件</h2><video id="evv" controls playsinline class="hide"></video>
-  <a id="evdl" class="hide" style="color:var(--ac)">下載這段</a><div id="evl"></div>
+<dialog id="evd"><h2>錄影事件</h2><div class="mut" id="evstore"></div>
+  <div class="row" id="evtools"><button id="evzip">⬇ 匯出全部 ZIP</button><button id="evclr" class="r">全部刪除</button></div>
+  <video id="evv" controls playsinline class="hide"></video>
+  <div class="row"><a id="evdl" class="hide" style="color:var(--ac)"></a></div><div id="evl"></div>
   <div class="row"><button id="evc">關閉</button></div></dialog>
 <div id="dim" class="hide">點一下喚醒</div>
 <div id="toast" class="hide"></div>
@@ -96,150 +130,226 @@ input[type=range]{width:100%;padding:0}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),3200)};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),3500)};
 const PC=()=>({config:{iceServers:LS.get('wan',false)?[{urls:'stun:stun.l.google.com:19302'}]:[]}});
-const rid=n=>Math.random().toString(36).slice(2,2+n);
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
+const rid=n=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>(b%36).toString(36)).join('');
+const rtok=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const newPin=()=>String(rnd(1e6)).padStart(6,'0');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const SC={home:'手機攝影機',cam:'📷 攝影機',vwr:'📺 檢視器'};
-const show=s=>{for(const k in SC)$('#'+k).classList.toggle('hide',k!==s);$('#ttl').textContent=SC[s];};
+const show=s=>{for(const k in SC)$('#'+k).classList.toggle('hide',k!==s);$('#ttl').textContent=SC[s]};
 const copy=t=>navigator.clipboard.writeText(t).then(()=>toast('已複製'));
+const withTO=(p,ms=20000)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('逾時')),ms))]);
+const mb=n=>(n/1048576).toFixed(1);
+const saveBlob=(b,name)=>{const a=document.createElement('a'),u=URL.createObjectURL(b);a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),4000)};
 function qr(el,u){try{const q=qrcode(0,'M');q.addData(u);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QR 產生失敗'}}
-
-// ---- IndexedDB（錄影片段）----
-const DB=new Promise(r=>{const q=indexedDB.open('pwcam',1);q.onupgradeneeded=()=>q.result.createObjectStore('clips',{keyPath:'id',autoIncrement:true});q.onsuccess=()=>r(q.result)});
-const tx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction('clips',m),q=f(t.objectStore('clips'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})};
-const evList=async()=>(await tx('readonly',s=>s.getAll())).map(r=>({id:r.id,ts:r.ts,dur:r.dur,size:r.blob.size})).reverse();
-function openEv(list,get,del){
-  const L=$('#evl');L.innerHTML=list.length?'':'<div class="mut">目前沒有錄影</div>';
-  list.forEach(e=>{const r=document.createElement('div');r.className='ev';
-    r.innerHTML=`<span>${new Date(e.ts).toLocaleString()}<br><span class="mut">${e.dur} 秒・${(e.size/1048576).toFixed(1)} MB</span></span><span><button>▶</button> <button>🗑</button></span>`;
-    const [b1,b2]=r.querySelectorAll('button');
-    b1.onclick=async()=>{toast('讀取中…');const b=await get(e.id),v=$('#evv'),a=$('#evdl');v.src=URL.createObjectURL(b);v.classList.remove('hide');v.play().catch(()=>{});a.href=v.src;a.download='clip-'+e.ts+(b.type.includes('mp4')?'.mp4':'.webm');a.classList.remove('hide')};
-    b2.onclick=async()=>{await del(e.id);r.remove()};
-    L.append(r)});
-  $('#evv').classList.add('hide');$('#evdl').classList.add('hide');$('#evd').showModal();
-}
-$('#evc').onclick=()=>{$('#evv').pause();$('#evd').close()};
-
-// ---- 共用 ----
-async function boost(c,q){try{const sn=c.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video'),p=sn.getParameters(),low=q==='low';if(!p.encodings||!p.encodings.length)p.encodings=[{}];
-  p.encodings[0].maxBitrate=low?8e5:4e6;p.encodings[0].scaleResolutionDownBy=low?2:1;p.degradationPreference='maintain-resolution';await sn.setParameters(p)}catch(e){}}
-const newPin=()=>String(Math.floor(Math.random()*1e6)).padStart(6,'0');
 const parsePair=s=>{try{const p=new URLSearchParams(new URL(s.trim()).hash.slice(1)),id=p.get('v'),k=p.get('k');return id&&k?{id,pin:k,name:p.get('n')||'檢視器'}:null}catch(e){return null}};
+const TIER={high:[4e6,1],mid:[1.5e6,1.5],low:[6e5,2]},RANK={low:0,mid:1,high:2};
+async function boost(c,q){try{const sn=c.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video'),p=sn.getParameters(),[br,sc]=TIER[q]||TIER.low;
+  if(!p.encodings||!p.encodings.length)p.encodings=[{}];p.encodings[0].maxBitrate=br;p.encodings[0].scaleResolutionDownBy=sc;p.degradationPreference='maintain-resolution';await sn.setParameters(p)}catch(e){}}
 
-// ================= 攝影機（掃檢視器 QR 配對）=================
+// ---- IndexedDB（錄影；每段事件 = 多個可獨立播放的小檔 parts）----
+const DB=new Promise(r=>{const q=indexedDB.open('pwcam',2);q.onupgradeneeded=()=>{const d=q.result;if(d.objectStoreNames.contains('clips'))d.deleteObjectStore('clips');d.createObjectStore('clips',{keyPath:'id',autoIncrement:true})};q.onsuccess=()=>r(q.result)});
+const tx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction('clips',m),q=f(t.objectStore('clips'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})};
+const evList=async()=>(await tx('readonly',s=>s.getAll())).map(r=>({id:r.id,ts:r.ts,dur:r.dur,size:r.size})).reverse();
+async function storeTxt(){const all=await tx('readonly',s=>s.getAll()),used=all.reduce((a,r)=>a+r.size,0);let q='';
+  try{const e=await navigator.storage.estimate();q='・瀏覽器剩餘約 '+Math.round((e.quota-e.usage)/1048576)+' MB'}catch(e){}
+  return `錄影 ${all.length} 段・已用 ${mb(used)} MB / 上限 ${S.maxMB} MB`+q}
+async function prune(f){const all=await tx('readonly',s=>s.getAll()),cap=S.maxMB*1048576*f;let tot=all.reduce((a,r)=>a+r.size,0);
+  for(const r of all){if(tot<=cap)break;await tx('readwrite',s=>s.delete(r.id));tot-=r.size}}
+async function saveClip(c){
+  const size=c.parts.reduce((a,b)=>a+b.size,0),r={ts:c.ts,dur:c.dur,mime:c.mime,parts:c.parts,size};
+  try{await tx('readwrite',s=>s.add(r))}catch(e){await prune(.5);try{await tx('readwrite',s=>s.add(r))}catch(e2){return toast('儲存空間不足，這段錄影未儲存')}}
+  await prune(1);
+}
+// 事件對話框
+let evU=[];const revokeAll=()=>{evU.forEach(u=>URL.revokeObjectURL(u));evU=[]};
+function playParts(c){revokeAll();const v=$('#evv'),us=c.parts.map(b=>{const u=URL.createObjectURL(new Blob([b],{type:c.mime}));evU.push(u);return u});let i=0;
+  const go=()=>{v.src=us[i];v.play().catch(()=>{})};v.onended=()=>{if(++i<us.length)go()};v.classList.remove('hide');go()}
+async function dlClip(c,e){const ext=c.mime.includes('mp4')?'mp4':'webm',n='clip-'+new Date(e.ts).toISOString().replace(/[:.]/g,'-');
+  if(c.parts.length===1)return saveBlob(new Blob([c.parts[0]],{type:c.mime}),n+'.'+ext);
+  const z=new JSZip();c.parts.forEach((p,i)=>z.file(`${n}-${i+1}.${ext}`,p));saveBlob(await z.generateAsync({type:'blob',compression:'STORE'}),n+'.zip')}
+async function exportAll(){const all=await tx('readonly',s=>s.getAll());if(!all.length)return toast('沒有錄影');toast('壓縮中…');const z=new JSZip();
+  all.forEach(r=>{const n='clip-'+new Date(r.ts).toISOString().replace(/[:.]/g,'-'),ext=r.mime.includes('mp4')?'mp4':'webm';r.parts.forEach((p,i)=>z.file(`${n}/${i+1}.${ext}`,p))});
+  saveBlob(await z.generateAsync({type:'blob',compression:'STORE'}),'recordings.zip')}
+async function openEv(list,get,del,local){
+  const L=$('#evl');L.innerHTML=list.length?'':'<div class="mut">目前沒有錄影</div>';
+  $('#evtools').classList.toggle('hide',!local);$('#evstore').textContent=local?await storeTxt():'';
+  list.forEach(e=>{const r=document.createElement('div');r.className='ev';
+    r.innerHTML=`<span>${new Date(e.ts).toLocaleString()}<br><span class="mut">約 ${e.dur} 秒・${mb(e.size)} MB</span></span><span><button>▶</button> <button>⬇</button> <button>🗑</button></span>`;
+    const [b1,b2,b3]=r.querySelectorAll('button');
+    const fetchC=async()=>{toast('讀取中…');try{return await get(e.id)}catch(x){toast('讀取失敗：'+x.message)}};
+    b1.onclick=async()=>{const c=await fetchC();c&&playParts(c)};
+    b2.onclick=async()=>{const c=await fetchC();c&&dlClip(c,e)};
+    b3.onclick=async()=>{await del(e.id);r.remove();if(local)$('#evstore').textContent=await storeTxt()};
+    L.append(r)});
+  $('#evv').classList.add('hide');$('#evd').showModal();
+}
+$('#evc').onclick=()=>{$('#evv').pause();revokeAll();$('#evd').close()};
+$('#evzip').onclick=exportAll;
+$('#evclr').onclick=async()=>{if(!confirm('刪除全部錄影？'))return;await tx('readwrite',s=>s.clear());$('#evd').close();revokeAll();toast('已全部刪除')};
+
+// ================= 攝影機 =================
 let camId=LS.get('camid',null);
 if(!camId){camId='pwc-'+rid(10);LS.set('camid',camId)}
-let S={name:'攝影機 '+camId.slice(-3).toUpperCase(),motion:true,sens:60,rec:true,ntfy:'',face:'environment',...LS.get('cs',{})};
+let S={name:'攝影機 '+camId.slice(-3).toUpperCase(),motion:true,sens:60,conf:2,tail:10,rec:true,rq:'480',maxMB:500,ntfy:'',face:'environment',dev:'',mic:true,mask:Array(48).fill(0),...LS.get('cs',{})};
 const saveS=()=>LS.set('cs',S);
 let pairs=LS.get('pairs',[]);
-let stream,cpeer,vc={},calls={},qs={},authed=new Set(),prev=null,lastM=0,lastN=0,rec=null,recT=0,bat={},running=false,loopT,infoT,linkT,wl;
+const savePairs=()=>LS.set('pairs',pairs.map(({id,pin,tok,name})=>({id,pin,tok,name})));
+const MIME=['video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'';
+const SEG=3,PRE=2,BR={720:2.5e6,480:1.2e6,low:5e5};
+let stream,cpeer,vc={},calls={},qs={},authed=new Set(),prev=null,hits=0,lastM=0,lastN=0,bat={},running=false,loopT,infoT,linkT,hbT,wl,tOn=false,nDev=1;
+let H={track:'live',fps:0,last:''},muteT,healT=0,pendHeal=null,lastTf=0,lastTt=0,stall=0;
+let ring=[],clip=null,sr=null,segT;
 const pv=$('#pv');
 const lock=async()=>{try{wl=await navigator.wakeLock.request('screen')}catch(e){}};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&running)lock()});
+const vdevs=async()=>(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+
 function renderPairs(){
   const L=$('#pairs');L.innerHTML=pairs.length?'':'<div class="mut">尚未配對。到檢視器顯示配對 QR，用相機 App 掃描，或按「掃描配對 QR」。</div>';
   pairs.forEach(p=>{const e=vc[p.id],d=document.createElement('div');d.className='row';
-    d.innerHTML=`<span class="dot${e&&e.ok?' on':''}"></span><span style="flex:1">${esc(p.name)} <span class="mut">${p.bad?'配對碼無效，請重新掃描':e&&e.ok?'已連線':running?'連線中…':'待機'}</span></span><button>移除</button>`;
-    d.querySelector('button').onclick=()=>{e&&e.conn.close();delete vc[p.id];authed.delete(p.id);pairs=pairs.filter(x=>x.id!==p.id);LS.set('pairs',pairs);renderPairs()};L.append(d)});
+    d.innerHTML=`<span class="dot${e&&e.ok?' on':''}"></span><span style="flex:1">${esc(p.name)} <span class="mut">${p.bad?'授權失效，請重新掃描':e&&e.ok?'已連線':running?'連線中…':'待機'}</span></span><button>移除</button>`;
+    d.querySelector('button').onclick=()=>{e&&e.conn.close();delete vc[p.id];authed.delete(p.id);pairs=pairs.filter(x=>x.id!==p.id);savePairs();renderPairs()};L.append(d)});
 }
 const viewers=()=>{renderPairs();$('#cinfo').textContent=running?'・'+authed.size+' 個檢視器連線中':''};
-function addPair(p){pairs=[...pairs.filter(x=>x.id!==p.id),p];LS.set('pairs',pairs);renderPairs();if(running)link()}
+function addPair(p){pairs=[...pairs.filter(x=>x.id!==p.id),p];savePairs();renderPairs();if(running)link()}
 
+const gum=async(v,a)=>{try{return await navigator.mediaDevices.getUserMedia({video:v,audio:a})}catch(e){if(a)return gum(v,false);throw e}};
 async function getCam(){
-  const old=stream,v={video:{facingMode:{ideal:S.face},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}};
-  try{stream=await navigator.mediaDevices.getUserMedia({...v,audio:true})}catch(e){stream=await navigator.mediaDevices.getUserMedia(v)}
-  pv.srcObject=stream;prev=null;
-  if(rec)stopRec();
+  const old=stream,base={width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}};
+  stopSeg();
+  if(old)old.getTracks().forEach(t=>{t.onended=t.onmute=t.onunmute=null;t.stop()}); // 先釋放舊鏡頭，才能真正換鏡頭
+  stream=null;
+  const dv=S.dev?{...base,deviceId:{exact:S.dev}}:{...base,facingMode:{ideal:S.face}};
+  try{stream=await gum(dv,S.mic)}catch(e){if(!S.dev)throw e;S.dev='';saveS();stream=await gum({...base,facingMode:{ideal:S.face}},S.mic)}
+  const vt=stream.getVideoTracks()[0];
+  vt.onended=()=>{H.track='ended';heal('相機被終止')};
+  vt.onmute=()=>{H.track='muted';clearTimeout(muteT);muteT=setTimeout(()=>heal('相機被暫停'),10000)};
+  vt.onunmute=()=>{H.track='live';clearTimeout(muteT)};
+  H.track='live';pv.srcObject=stream;prev=null;stall=0;tOn=false;
   for(const c of Object.values(calls))c.peerConnection.getSenders().forEach(s=>{if(!s.track)return;const n=stream.getTracks().find(t=>t.kind===s.track.kind);if(n)s.replaceTrack(n)});
-  if(old)old.getTracks().forEach(t=>t.stop());
+  vdevs().then(d=>{nDev=d.length});
+  segLoop();
+}
+async function heal(reason,force){
+  if(!running)return;
+  if(document.hidden){pendHeal=reason;return}
+  if(!force&&Date.now()-healT<8000)return;
+  healT=Date.now();pendHeal=null;H.last=reason+' '+new Date().toLocaleTimeString();toast('相機重新啟動：'+reason);
+  try{await getCam();authed.forEach(sendInfo)}catch(e){H.track='ended';setTimeout(()=>heal(reason+'（重試）',true),8000)}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&running){lock();const vt=stream&&stream.getVideoTracks()[0];if(pendHeal||!vt||vt.readyState!=='live'||H.track!=='live')heal(pendHeal||'回到前景',true)}});
+function beat(){
+  if(!running)return;
+  const q=pv.getVideoPlaybackQuality?pv.getVideoPlaybackQuality():null,tf=q?q.totalVideoFrames:0,now=performance.now();
+  H.fps=lastTt&&q?Math.max(0,Math.round((tf-lastTf)/((now-lastTt)/1000))):0;lastTf=tf;lastTt=now;
+  if(!document.hidden&&q&&H.track==='live'&&stream&&H.fps<1){if(++stall>=3)heal('影像停止更新')}else stall=0;
+  const m={t:'hb',vis:!document.hidden,wake:!!(wl&&!wl.released),trk:H.track,fps:H.fps,stall:stall>0};
+  authed.forEach(id=>{const e=vc[id];e&&e.conn.open&&e.conn.send(m)});
+  $('#hstat').textContent=(document.hidden?'背景／螢幕鎖定':'前景')+'・'+(m.wake?'螢幕常亮中':'螢幕未鎖定常亮')+'・影像'+({live:'正常',muted:'被暫停',ended:'已終止'}[H.track])+' '+H.fps+'fps'+(H.last?'\n上次自動修復：'+H.last:'');
 }
 async function camStart(){
   if(running)return;
   try{await getCam()}catch(e){return toast('相機失敗：'+e.message+(isSecureContext?'':'（需 HTTPS）'))}
   running=true;$('#cGo').textContent='停止守候';$('#cGo').className='r';$('#cs').textContent='守候中';
-  lock();startPeer();viewers();
-  loopT=setInterval(tick,500);infoT=setInterval(()=>authed.forEach(sendInfo),30000);linkT=setInterval(link,4000);
+  lock();startPeer();viewers();try{navigator.storage.persist()}catch(e){}
+  loopT=setInterval(tick,500);infoT=setInterval(()=>authed.forEach(sendInfo),30000);linkT=setInterval(link,4000);hbT=setInterval(beat,3000);
   if(navigator.getBattery)navigator.getBattery().then(b=>{const u=()=>{bat={level:Math.round(b.level*100),chg:b.charging};authed.forEach(sendInfo)};b.onlevelchange=b.onchargingchange=u;u()});
 }
 function camStop(){
-  running=false;clearInterval(loopT);clearInterval(infoT);clearInterval(linkT);stopRec();
+  running=false;[loopT,infoT,linkT,hbT].forEach(clearInterval);clearTimeout(muteT);stopSeg();clip=null;ring=[];
   Object.values(calls).forEach(c=>c.close());calls={};Object.values(vc).forEach(e=>e.conn.close());vc={};authed.clear();
-  stream&&stream.getTracks().forEach(t=>t.stop());stream=null;pv.srcObject=null;
+  stream&&stream.getTracks().forEach(t=>{t.onended=t.onmute=t.onunmute=null;t.stop()});stream=null;pv.srcObject=null;
   cpeer&&cpeer.destroy();cpeer=null;wl&&wl.release().catch(()=>{});
-  $('#cGo').textContent='開始守候';$('#cGo').className='p';$('#cs').textContent='待機';$('#md').classList.remove('m');viewers();
+  $('#cGo').textContent='開始守候';$('#cGo').className='p';$('#cs').textContent='待機';$('#md').classList.remove('m');$('#hstat').textContent='';viewers();
 }
 function startPeer(){
   const p=cpeer=new Peer(camId,PC());
   p.on('open',link);
-  p.on('call',c=>{if(!authed.has(c.peer))return c.close();c.answer();c.on('stream',s=>{const a=$('#ta');a.srcObject=s;a.play().catch(()=>{})})}); // 檢視器對講
+  p.on('call',c=>{if(!authed.has(c.peer))return c.close();c.answer();c.on('stream',s=>{const a=$('#ta');a.srcObject=s;a.play().catch(()=>{})})});
   p.on('disconnected',()=>running&&p.reconnect());
   p.on('error',e=>{if(e.type==='unavailable-id')setTimeout(()=>{if(running&&cpeer===p){p.destroy();startPeer()}},4000);else if(e.type!=='peer-unavailable')toast('連線錯誤：'+e.type)});
 }
 const link=()=>pairs.forEach(connectPair);
 function connectPair(p){
-  if(!cpeer||!cpeer.open||p.bad)return;
+  if(!cpeer||!cpeer.open||p.bad||(p.wait&&Date.now()<p.wait))return;
   const o=vc[p.id];if(o&&(o.conn.open||Date.now()-o.t<8000))return;
   if(o)o.conn.close();
   const c=cpeer.connect(p.id,{reliable:true}),e=vc[p.id]={conn:c,t:Date.now(),ok:false};
-  c.on('open',()=>c.send({t:'hello',pin:p.pin,name:S.name}));
+  c.on('open',()=>c.send({t:'hello',name:S.name,...(p.tok?{tok:p.tok}:{pin:p.pin})}));
   c.on('data',m=>onMsg(c,p,m));
   c.on('close',()=>{if(vc[p.id]!==e)return;authed.delete(p.id);calls[p.id]&&calls[p.id].close();delete calls[p.id];e.ok=false;e.t=0;viewers()});
 }
 function sendInfo(id){
   const e=vc[id],vt=stream&&stream.getVideoTracks()[0],cp=vt&&vt.getCapabilities?vt.getCapabilities():{};
-  if(e&&e.conn.open&&authed.has(id))e.conn.send({t:'info',bat,torch:!!cp.torch,zoom:cp.zoom?{min:cp.zoom.min,max:cp.zoom.max,step:cp.zoom.step||0.1}:null});
+  if(e&&e.conn.open&&authed.has(id))e.conn.send({t:'info',name:S.name,bat,lens:vt?vt.label:'',nDev,mic:S.mic,torchOn:tOn,torch:!!cp.torch,zoom:cp.zoom?{min:cp.zoom.min,max:cp.zoom.max,step:cp.zoom.step||0.1}:null});
+}
+async function nextLens(){
+  const ds=await vdevs();if(ds.length<2){authed.forEach(id=>{const e=vc[id];e&&e.conn.open&&e.conn.send({t:'note',m:'這支手機只有一個鏡頭'})});return}
+  const vt=stream&&stream.getVideoTracks()[0],cur=vt&&vt.getSettings().deviceId,i=ds.findIndex(d=>d.deviceId===cur),next=ds[(i+1)%ds.length],prevDev=S.dev;
+  try{S.dev=next.deviceId;saveS();await getCam()}catch(e){S.dev=prevDev;saveS();await getCam().catch(()=>{});toast('切換鏡頭失敗：'+e.message)}
+  authed.forEach(sendInfo);
 }
 async function onMsg(c,p,m){
-  if(m.t==='ok'){authed.add(p.id);vc[p.id].ok=true;viewers();sendInfo(p.id);return}
-  if(m.t==='bad'){p.bad=true;toast('配對碼無效，請重新掃描檢視器的 QR');viewers();return}
+  if(m.t==='ok'){if(m.tok){p.tok=m.tok;delete p.pin;savePairs()}authed.add(p.id);vc[p.id].ok=true;viewers();sendInfo(p.id);return}
+  if(m.t==='bad'){if(m.lock){p.wait=Date.now()+60000;toast('嘗試次數過多，稍後自動重試')}else{p.bad=true;toast('授權失效，請重新掃描檢視器的 QR')}viewers();return}
   if(!authed.has(p.id)||!stream)return;
   const vt=stream.getVideoTracks()[0];
   switch(m.t){
     case'view':{calls[p.id]&&calls[p.id].close();const k=cpeer.call(p.id,stream);calls[p.id]=k;k.on('close',()=>{if(calls[p.id]===k)delete calls[p.id]});setTimeout(()=>boost(k,qs[p.id]),1500);break}
     case'stopview':calls[p.id]&&calls[p.id].close();break;
     case'q':qs[p.id]=m.v;calls[p.id]&&boost(calls[p.id],m.v);break;
-    case'torch':vt.applyConstraints({advanced:[{torch:!!m.v}]}).catch(()=>{});break;
+    case'torch':vt.applyConstraints({advanced:[{torch:!!m.v}]}).then(()=>{tOn=!!m.v;authed.forEach(sendInfo)}).catch(()=>toast('這個鏡頭不支援手電筒'));break;
     case'zoom':vt.applyConstraints({advanced:[{zoom:m.v}]}).catch(()=>{});break;
-    case'switch':S.face=S.face==='user'?'environment':'user';saveS();await getCam();authed.forEach(sendInfo);break;
+    case'switch':await nextLens();break;
+    case'restart':heal('檢視器要求重啟',true);break;
     case'events':c.send({t:'events',list:await evList()});break;
-    case'getclip':{const r=await tx('readonly',s=>s.get(m.id));if(r)c.send({t:'clip',id:m.id,mime:r.mime,buf:await r.blob.arrayBuffer()});break}
+    case'getclip':{const r=await tx('readonly',s=>s.get(m.id));if(r)c.send({t:'clip',id:m.id,mime:r.mime,parts:await Promise.all(r.parts.map(b=>b.arrayBuffer()))});break}
     case'delclip':await tx('readwrite',s=>s.delete(m.id));break;
-    case'unpair':pairs=pairs.filter(x=>x.id!==p.id);LS.set('pairs',pairs);c.close();delete vc[p.id];authed.delete(p.id);viewers();break;
+    case'unpair':pairs=pairs.filter(x=>x.id!==p.id);savePairs();c.close();delete vc[p.id];authed.delete(p.id);viewers();break;
   }
 }
-// 動態偵測 + 錄影
+// ---- 動態偵測（忽略區域 + 連續確認 + 事件前錄影）----
 const mc=document.createElement('canvas');mc.width=64;mc.height=48;const mx=mc.getContext('2d',{willReadFrequently:true});
 function tick(){
   const now=Date.now();
-  if(rec&&(now-lastM>8000||now-recT>60000))stopRec();
-  if(!S.motion||pv.readyState<2)return;
-  mx.drawImage(pv,0,0,64,48);const d=mx.getImageData(0,0,64,48).data,g=new Uint8Array(3072);let n=0;
-  for(let i=0;i<3072;i++){g[i]=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;if(prev&&Math.abs(g[i]-prev[i])>25)n++}
-  const hit=prev&&n/3072>0.005+0.08*(1-S.sens/100);prev=g;
-  $('#md').classList.toggle('m',!!hit||!!rec);
-  if(!hit)return;
-  lastM=now;if(S.rec&&!rec)startRec();
+  if(clip&&!clip.end&&(now-lastM>S.tail*1000||now-clip.t0>18e4)){clip.end=true;sr&&sr.state==='recording'&&sr.stop()}
+  if(!S.motion||pv.readyState<2||!stream)return;
+  mx.drawImage(pv,0,0,64,48);const d=mx.getImageData(0,0,64,48).data,g=new Uint8Array(3072);let n=0,tot=0;
+  for(let i=0;i<3072;i++){g[i]=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;
+    if(S.mask[((i>>6)>>3)*8+((i&63)>>3)])continue;tot++;if(prev&&Math.abs(g[i]-prev[i])>25)n++}
+  const hit=prev&&tot&&n/tot>0.005+0.08*(1-S.sens/100);prev=g;hits=hit?hits+1:0;
+  const ok=hits>=S.conf;$('#md').classList.toggle('m',ok||!!clip);
+  if(!ok)return;
+  lastM=now;startClip();
   if(now-lastN>30000){lastN=now;
     authed.forEach(id=>{const e=vc[id];e&&e.conn.open&&e.conn.send({t:'motion',ts:now})});
     if(S.ntfy)fetch('https://ntfy.sh/'+encodeURIComponent(S.ntfy),{method:'POST',body:S.name+' 偵測到動態',headers:{Title:'Camera motion'}}).catch(()=>{});}
 }
-function startRec(){
-  const mime=['video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';
-  let r;try{r=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:1.5e6})}catch(e){return}
-  const ch=[],t0=recT=Date.now();rec=r;
+// ---- 分段錄影：每 3 秒一個獨立完整檔，環形保留最近 2 段作為事件前錄影 ----
+function segLoop(){
+  if(sr||!running||!S.rec||!stream||!MIME)return;
+  const vt=stream.getVideoTracks()[0];if(!vt||vt.readyState!=='live')return;
+  let r;try{r=new MediaRecorder(stream,{mimeType:MIME,videoBitsPerSecond:BR[S.rq]})}catch(e){return}
+  const ch=[];sr=r;
   r.ondataavailable=e=>e.data.size&&ch.push(e.data);
-  r.onstop=async()=>{await tx('readwrite',s=>s.add({ts:t0,dur:Math.round((Date.now()-t0)/1000),mime:r.mimeType,blob:new Blob(ch,{type:r.mimeType})}));
-    const ks=await tx('readonly',s=>s.getAllKeys());for(const k of ks.slice(0,Math.max(0,ks.length-30)))await tx('readwrite',s=>s.delete(k))};
-  r.start(1000);
+  r.onstop=()=>{clearTimeout(segT);if(sr===r)sr=null;
+    const b=new Blob(ch,{type:r.mimeType});
+    if(b.size){if(clip){clip.parts.push(b);clip.dur+=SEG;if(clip.end){const c=clip;clip=null;saveClip(c)}}else{ring.push(b);if(ring.length>PRE)ring.shift()}}
+    else if(clip&&clip.end){const c=clip;clip=null;c.parts.length&&saveClip(c)}
+    segLoop()};
+  r.start();segT=setTimeout(()=>r.state==='recording'&&r.stop(),SEG*1000);
 }
-function stopRec(){const r=rec;rec=null;r&&r.state!=='inactive'&&r.stop()}
+function stopSeg(){clearTimeout(segT);if(sr&&sr.state==='recording')try{sr.stop()}catch(e){}}
+function startClip(){if(clip||!S.rec||!MIME)return;const n=ring.length;clip={ts:Date.now()-n*SEG*1000,parts:ring.splice(0),dur:n*SEG,end:false,t0:Date.now(),mime:MIME}}
 
-// 掃描檢視器 QR
+// ---- 掃描檢視器 QR ----
 let scanT=null,scanS=null,scanX;
 function stopScan(){clearInterval(scanT);clearTimeout(scanX);scanT=null;if(scanS){scanS.getTracks().forEach(t=>t.stop());scanS=null}$('#scd').open&&$('#scd').close()}
 function scanLoop(v){
@@ -247,7 +357,7 @@ function scanLoop(v){
   const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
   scanT=setInterval(()=>{if(!v.videoWidth)return;c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
     const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height),p=r&&parsePair(r.data);
-    if(p){stopScan();addPair(p);toast('已配對：'+p.name);camStart()}},250);
+    if(p){stopScan();addPair(p);toast('已掃描：'+p.name);camStart()}},250);
 }
 $('#cScan').onclick=async()=>{
   if(running){toast('把鏡頭對準檢視器上的 QR…');return scanLoop(pv)}
@@ -257,52 +367,135 @@ $('#cScan').onclick=async()=>{
 $('#scx').onclick=stopScan;
 $('#addb').onclick=()=>{const p=parsePair($('#addin').value);if(!p)return toast('連結無效');$('#addin').value='';addPair(p);camStart()};
 $('#cGo').onclick=()=>running?camStop():camStart();
-$('#cEv').onclick=async()=>openEv(await evList(),id=>tx('readonly',s=>s.get(id)).then(r=>r.blob),id=>tx('readwrite',s=>s.delete(id)));
-$('#cDim').onclick=()=>$('#dim').classList.remove('hide');$('#dim').onclick=()=>$('#dim').classList.add('hide');
+$('#cEv').onclick=async()=>openEv(await evList(),id=>tx('readonly',s=>s.get(id)),id=>tx('readwrite',s=>s.delete(id)),true);
+$('#cDim').onclick=()=>{$('#dim').classList.remove('hide');document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})};
+$('#dim').onclick=()=>{$('#dim').classList.add('hide');document.fullscreenElement&&document.exitFullscreen()};
 
 // ================= 檢視器（多畫面）=================
-let vid=LS.get('vid',null),vpin=LS.get('vpin',null),vpeer,C={},focus=null,tcall,mic,torchOn=false,pend={};
+let vid=LS.get('vid',null),vpin=newPin(),vpinT=Date.now(),vpeer,C={},focus=null,tcall,mic,pend={},holding=false,fails=0,lockUntil=0;
+let V={talk:LS.get('vtalk',true)};
 if(!vid){vid='pwv-'+rid(10);LS.set('vid',vid)}
-if(!vpin){vpin=newPin();LS.set('vpin',vpin)}
 const vUrl=()=>location.origin+location.pathname+'#v='+vid+'&k='+vpin+'&n='+encodeURIComponent('檢視器 '+vid.slice(-3).toUpperCase());
-const saveKc=()=>LS.set('kc',Object.values(C).map(t=>({id:t.id,name:t.name})));
+const saveKc=()=>LS.set('kc',Object.values(C).map(t=>({id:t.id,name:t.name,tok:t.tok,last:t.last,group:t.group})));
 const T=()=>C[focus],sendF=m=>{const t=T();t&&t.conn&&t.conn.open&&t.conn.send(m)};
-function showPbox(on){$('#pbox').classList.toggle('hide',!on);if(on){const u=vUrl();qr($('#pqr'),u);$('#plk').value=u}}
-function upd(t){
-  t.nm.textContent=t.name;t.dot.className='dot'+(t.ok?' on':'');t.off.classList.toggle('hide',t.ok);
-  t.inf.textContent=t.ok&&t.info.bat&&t.info.bat.level!=null?'🔋'+t.info.bat.level+'%'+(t.info.bat.chg?'⚡':''):'';
-  const all=Object.values(C);$('#vcount').textContent=all.length?`在線 ${all.filter(x=>x.ok).length} / ${all.length}`:'尚無攝影機';
+function showPbox(on){$('#pbox').classList.toggle('hide',!on);if(on){if(Date.now()-vpinT>3e5)regenPin(true);const u=vUrl();qr($('#pqr'),u);$('#plk').value=u}}
+function regenPin(quiet){vpin=newPin();vpinT=Date.now();if(!quiet&&!$('#pbox').classList.contains('hide'))showPbox(true)}
+setInterval(()=>{if(LS.get('mode',null)!=='vwr')return;const l=Math.ceil(300-(Date.now()-vpinT)/1000);if(l<=0)regenPin();else $('#pexp').textContent='配對碼剩 '+Math.floor(l/60)+':'+String(l%60).padStart(2,'0');
+  Object.values(C).forEach(t=>{const s=t.ok&&t.hb&&Date.now()-t.hb.at>10000;if(s!==!!t.stale){t.stale=s;upd(t)}})},1000);
+// ---- 分組 / 排序 / 2·4·9 分割 / 一鍵操作 ----
+let gf=LS.get('vgf','*'),page=0,ord=LS.get('vord',[]);
+V.layout=LS.get('vlay',0);V.sort=LS.get('vsort','manual');
+function sorted(){
+  const cmp={manual:(a,b)=>ord.indexOf(a.id)-ord.indexOf(b.id),name:(a,b)=>a.name.localeCompare(b.name),online:(a,b)=>(b.ok-a.ok)||a.name.localeCompare(b.name),recent:(a,b)=>(b.last||0)-(a.last||0)}[V.sort];
+  return Object.values(C).filter(t=>gf==='*'||(t.group||'')===gf).sort(cmp);
 }
-function tile(id,name){
-  let t=C[id];if(t){if(name)t.name=name;upd(t);return t}
+function renderBar(){
+  const all=Object.values(C),gs=[...new Set(all.map(t=>t.group).filter(Boolean))].sort(),un=all.some(t=>!t.group),B=$('#gbar');
+  if(gf!=='*'&&!(gf===''?(gs.length&&un):gs.includes(gf)))gf='*';
+  B.classList.toggle('hide',!gs.length);B.innerHTML='';
+  [['*','全部'],...gs.map(g=>[g,g]),...(gs.length&&un?[['','未分組']]:[])].forEach(([v,l])=>{const b=document.createElement('button');b.textContent=l;if(v===gf)b.className='p';b.onclick=()=>{gf=v;LS.set('vgf',gf);page=0;renderBar();layout()};B.append(b)});
+}
+function applyView(t,vis){ // 只讓目前畫面上、未暫停的攝影機串流，其餘停止以省頻寬
+  if(!t.conn||!t.conn.open){t.viewing=false;return}
+  const want=vis&&t.ok&&!t.paused;
+  if(want&&!t.viewing){t.viewing=true;t.pst=null;t.conn.send({t:'view'})}
+  else if(!want&&t.viewing){t.viewing=false;t.conn.send({t:'stopview'});t.video.srcObject=null;t.st.textContent=''}
+}
+function layout(){
+  Object.keys(C).forEach(id=>ord.includes(id)||ord.push(id));ord=ord.filter(id=>C[id]);
+  const list=sorted(),per=V.layout||list.length||1,pages=Math.max(1,Math.ceil(list.length/per));page=Math.min(page,pages-1);
+  const vis=new Set(list.slice(page*per,page*per+per)),g=$('#grid');g.dataset.n=V.layout;
+  [...list,...Object.values(C).filter(t=>!list.includes(t))].forEach((t,i)=>{if(g.children[i]!==t.el)g.insertBefore(t.el,g.children[i]||null)});
+  Object.values(C).forEach(t=>{t.el.classList.toggle('hide',!vis.has(t));applyView(t,vis.has(t));if(vis.has(t)&&t.video.srcObject)t.video.play().catch(()=>{})});
+  if(focus&&!vis.has(C[focus]))setFocus(null);
+  $('#pager').classList.toggle('hide',pages<2);$('#pgT').textContent=`第 ${page+1}/${pages} 頁`;
+}
+function move(t,d){
+  const list=sorted(),i=list.indexOf(t),j=i+d;if(j<0||j>=list.length)return;
+  ord=[...list.map(x=>x.id),...Object.keys(C).filter(id=>!list.some(x=>x.id===id))];
+  [ord[i],ord[j]]=[ord[j],ord[i]];LS.set('vord',ord);
+  if(V.sort!=='manual'){V.sort='manual';LS.set('vsort','manual');$('#vSort').value='manual'}
+  layout();
+}
+function setGroup(t){
+  const gs=[...new Set(Object.values(C).map(x=>x.group).filter(Boolean))];
+  const v=prompt('分組名稱（例：客廳、門口；留空＝未分組）'+(gs.length?'\n現有：'+gs.join('、'):''),t.group||'');if(v===null)return;
+  t.group=v.trim().slice(0,12);saveKc();upd(t);renderBar();layout();
+}
+$('#vSort').value=V.sort;$('#vLay').value=V.layout;
+$('#vSort').onchange=e=>{V.sort=e.target.value;LS.set('vsort',V.sort);layout()};
+$('#vLay').onchange=e=>{V.layout=+e.target.value;LS.set('vlay',V.layout);page=0;layout()};
+$('#pgP').onclick=()=>{page=Math.max(0,page-1);setFocus(null);layout()};
+$('#pgN').onclick=()=>{page++;setFocus(null);layout()};
+$('#vAll').onclick=()=>{Object.values(C).forEach(t=>{t.paused=false;upd(t)});layout();toast('已開始觀看目前畫面上的攝影機')};
+$('#vNone').onclick=()=>{Object.values(C).forEach(t=>{t.paused=true;upd(t)});setFocus(null);layout();toast('已全部暫停（不耗頻寬）')};
+$('#vFs').onclick=()=>{const g=$('#grid');g.requestFullscreen&&g.requestFullscreen()};
+const TIERNAME={high:'高',mid:'中',low:'低'};
+function updCount(){const all=Object.values(C);$('#vcount').textContent=all.length?`在線 ${all.filter(x=>x.ok).length} / ${all.length}`:'尚無攝影機'}
+function upd(t){
+  t.nm.textContent=(t.group?'['+t.group+'] ':'')+t.name;t.pz.classList.toggle('hide',!(t.ok&&t.paused));t.dot.className='dot'+(t.ok?' on':'');t.off.classList.toggle('hide',t.ok);
+  t.off.textContent='離線'+(t.last?'・上次連線 '+new Date(t.last).toLocaleString():'');
+  const h=t.hb,s=[];
+  if(t.ok&&t.info.bat&&t.info.bat.level!=null)s.push('🔋'+t.info.bat.level+'%'+(t.info.bat.chg?'⚡':''));
+  if(t.ok&&h){s.push(h.vis?'前景':'背景/鎖定');if(!h.wake)s.push('未常亮');if(h.trk!=='live')s.push('影像'+({muted:'暫停',ended:'終止'}[h.trk]));else if(h.stall)s.push('畫面停滯');if(t.stale)s.push('⚠️無回應')}
+  t.inf.textContent=s.join('・');updCount();
+}
+function tile(id,name,x){
+  let t=C[id];if(t){if(name)t.name=name;if(x)Object.assign(t,x);upd(t);return t}
   const el=document.createElement('div');el.className='tile';
-  el.innerHTML='<video autoplay muted playsinline></video><div class="ov"><span class="dot"></span><b></b><span class="mut"></span><span style="flex:1"></span><button aria-label="移除">🗑</button></div><div class="off">離線</div>';
-  t=C[id]={id,name:name||'攝影機',el,video:el.querySelector('video'),dot:el.querySelector('.dot'),nm:el.querySelector('b'),inf:el.querySelector('.mut'),off:el.querySelector('.off'),conn:null,ok:false,info:{}};
-  el.onclick=e=>{if(e.target.tagName!=='BUTTON')setFocus(focus===id?null:id)};
-  el.querySelector('button').onclick=()=>{if(confirm('移除「'+t.name+'」？')){t.conn&&t.conn.open&&t.conn.send({t:'unpair'});t.el.remove();delete C[id];saveKc();if(focus===id)setFocus(null);upd({nm:{},dot:{},off:{classList:{toggle(){}}},inf:{},ok:0,info:{},name:''});}};
+  el.innerHTML='<video autoplay muted playsinline></video><div class="ov"><span class="dot"></span><b></b><span class="mut"></span><span style="flex:1"></span><button aria-label="設定分組">🏷️</button><button aria-label="往前">◀</button><button aria-label="往後">▶</button><button aria-label="移除並撤銷授權">🗑</button></div><div class="off">離線</div><div class="pz hide">⏸ 已暫停<br>點一下恢復觀看</div><div class="st"></div>';
+  t=C[id]={id,name:name||'攝影機',el,video:el.querySelector('video'),dot:el.querySelector('.dot'),nm:el.querySelector('b'),inf:el.querySelector('.mut'),off:el.querySelector('.off'),st:el.querySelector('.st'),pz:el.querySelector('.pz'),conn:null,ok:false,info:{},q:'low',net:'high',good:0,...x};
+  el.onclick=e=>{if(e.target.tagName==='BUTTON')return;if(t.paused){t.paused=false;upd(t);layout();return}setFocus(focus===id?null:id)};
+  const bs=el.querySelectorAll('button');
+  bs[0].onclick=()=>setGroup(t);bs[1].onclick=()=>move(t,-1);bs[2].onclick=()=>move(t,1);
+  bs[3].onclick=()=>{if(confirm('移除「'+t.name+'」並撤銷它的授權？')){t.conn&&t.conn.open&&t.conn.send({t:'unpair'});t.el.remove();delete C[id];saveKc();if(focus===id)setFocus(null);renderBar();layout();updCount()}};
   $('#grid').append(el);upd(t);return t;
 }
+function applyQ(t){const want=focus===t.id?'high':'low',eff=RANK[want]<=RANK[t.net]?want:t.net;if(eff!==t.q||t.qSent!==eff){t.q=eff;t.qSent=eff;t.conn&&t.conn.open&&t.conn.send({t:'q',v:eff})}}
 function setFocus(id){
-  const prev=focus;focus=id;
-  if(prev&&prev!==id&&C[prev]&&C[prev].conn&&C[prev].conn.open)C[prev].conn.send({t:'q',v:'low'});
-  Object.values(C).forEach(t=>{t.el.classList.toggle('f',t.id===id);t.video.muted=t.id!==id});
-  $('#ctl').classList.toggle('hide',!id);torchOn=false;
+  focus=id;Object.values(C).forEach(t=>{t.el.classList.toggle('f',t.id===id);t.video.muted=t.id!==id;applyQ(t)});
+  $('#ctl').classList.toggle('hide',!id);
   if(!id)return;
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
-  const t=C[id];$('#ctlname').textContent='🎛 '+t.name;sendF({t:'q',v:'high'});ctlInfo(t);t.video.play().catch(()=>{});t.el.scrollIntoView({block:'nearest'});
+  const t=C[id];$('#ctlname').textContent='🎛 '+t.name;ctlInfo(t);t.video.play().catch(()=>{});t.el.scrollIntoView({block:'nearest'});
 }
 function ctlInfo(t){
-  if(t.id!==focus)return;const i=t.info||{};$('#bTorch').classList.toggle('hide',!i.torch);const z=$('#zm');z.classList.toggle('hide',!i.zoom);
-  if(i.zoom){z.min=i.zoom.min;z.max=i.zoom.max;z.step=i.zoom.step}
+  if(t.id!==focus)return;const i=t.info||{};$('#bTorch').classList.toggle('hide',!i.torch);$('#bTorch').textContent='🔦 手電筒：'+(i.torchOn?'開':'關');
+  const z=$('#zm');z.classList.toggle('hide',!i.zoom);if(i.zoom){z.min=i.zoom.min;z.max=i.zoom.max;z.step=i.zoom.step}
+  $('#bSw').textContent='🔄 切換鏡頭'+(i.lens?'（'+i.lens.slice(0,18)+'）':'');$('#bTalk').classList.toggle('hide',!V.talk);
 }
+async function vstats(t){
+  const pc=t.call&&t.call.peerConnection;if(!pc||!t.ok||!t.viewing)return;
+  const r=await pc.getStats(),o={};
+  r.forEach(x=>{if(x.type==='inbound-rtp'&&x.kind==='video'){o.w=x.frameWidth;o.h=x.frameHeight;o.fps=x.framesPerSecond;o.b=x.bytesReceived;o.lost=x.packetsLost;o.rcv=x.packetsReceived;o.j=x.jitter}
+    if(x.type==='candidate-pair'&&x.nominated&&x.currentRoundTripTime!=null)o.rtt=x.currentRoundTripTime*1000});
+  const now=performance.now(),p=t.pst;t.pst={b:o.b,l:o.lost,r:o.rcv,t:now};if(!p)return;
+  o.kbps=Math.round((o.b-p.b)*8/(now-p.t));const dl=o.lost-p.l,dr=o.rcv-p.r;o.loss=dl+dr>0?dl/(dl+dr)*100:0;
+  t.st.textContent=`${o.w||'?'}x${o.h||'?'} ${Math.round(o.fps||0)}fps ${o.kbps}kbps RTT${Math.round(o.rtt||0)}ms 掉包${o.loss.toFixed(1)}% 抖動${Math.round((o.j||0)*1000)}ms ${pc.connectionState} 畫質${TIERNAME[t.q]}`;
+  const want=o.loss>5||o.rtt>300?'low':o.loss>1.5||o.rtt>150?'mid':'high';
+  if(RANK[want]<RANK[t.net]){t.net=want;t.good=0}else if(RANK[want]>RANK[t.net]&&++t.good>=3){t.net=want;t.good=0}else if(want===t.net)t.good=0;
+  applyQ(t);
+}
+setInterval(()=>Object.values(C).forEach(t=>vstats(t).catch(()=>{})),2000);
 function vmsg(t,m){
+  t.last=Date.now();
   switch(m.t){
-    case'info':t.info=m;upd(t);ctlInfo(t);break;
+    case'info':t.info=m;if(m.name)t.name=m.name;upd(t);ctlInfo(t);break;
+    case'hb':t.hb={...m,at:Date.now()};t.stale=false;upd(t);break;
+    case'note':toast(t.name+'：'+m.m);break;
     case'motion':toast('⚠️ '+t.name+' 偵測到動態');t.dot.classList.add('m');setTimeout(()=>upd(t),5000);
       if('Notification' in window&&Notification.permission==='granted')navigator.serviceWorker.ready.then(r=>r.showNotification('手機攝影機',{body:t.name+' 偵測到動態',tag:'motion-'+t.id})).catch(()=>{});break;
     case'events':pend.ev&&pend.ev(m.list);pend.ev=null;break;
-    case'clip':pend['c'+m.id]&&pend['c'+m.id](new Blob([m.buf],{type:m.mime}));delete pend['c'+m.id];break;
+    case'clip':pend['c'+m.id]&&pend['c'+m.id]({mime:m.mime,parts:m.parts.map(b=>new Blob([b],{type:m.mime}))});delete pend['c'+m.id];break;
   }
+}
+function vauth(c,m){ // 回傳：null 拒絕、{lock}、{} 已授權、{tok} 新配對
+  const k=(LS.get('kc',[])).find(x=>x.id===c.peer);
+  if(m.tok)return k&&k.tok&&k.tok===m.tok?{}:null;
+  if(Date.now()<lockUntil)return{lock:1};
+  if(m.pin&&m.pin===vpin&&Date.now()-vpinT<3e5){fails=0;return{tok:rtok()}}
+  if(++fails>=5){lockUntil=Date.now()+60000;fails=0;return{lock:1}}
+  return null;
 }
 function vStart(){
   if(vpeer&&!vpeer.destroyed)return;
@@ -310,56 +503,72 @@ function vStart(){
   p.on('connection',c=>{
     c.on('data',m=>{
       if(m.t==='hello'){
-        if(m.pin!==vpin){c.send({t:'bad'});return}
+        const r=vauth(c,m);if(!r||r.lock){c.send({t:'bad',lock:!!(r&&r.lock)});return}
         const t=tile(c.peer,m.name);if(t.conn&&t.conn!==c)t.conn.close();
-        t.conn=c;t.ok=true;t.name=m.name||t.name;saveKc();upd(t);showPbox(false);
-        c.send({t:'ok'});c.send({t:'q',v:focus===c.peer?'high':'low'});c.send({t:'view'});
-        if(focus===c.peer)$('#ctlname').textContent='🎛 '+t.name;return}
+        t.conn=c;t.ok=true;t.name=m.name||t.name;t.last=Date.now();t.pst=null;t.hb=null;
+        if(r.tok){t.tok=r.tok;toast('✅ 已配對：'+t.name);regenPin(true);showPbox(false)}
+        saveKc();upd(t);t.qSent=null;t.viewing=false;c.send(r.tok?{t:'ok',tok:r.tok}:{t:'ok'});applyQ(t);renderBar();layout();return}
       const t=C[c.peer];if(t&&t.conn===c)vmsg(t,m);
     });
-    c.on('close',()=>{const t=C[c.peer];if(t&&t.conn===c){t.ok=false;t.conn=null;t.video.srcObject=null;t.info={};upd(t)}});
+    c.on('close',()=>{const t=C[c.peer];if(t&&t.conn===c){t.ok=false;t.conn=null;t.video.srcObject=null;t.info={};t.hb=null;t.viewing=false;t.st.textContent='';saveKc();upd(t);layout()}});
   });
-  p.on('call',c=>{const t=C[c.peer];if(!t||!t.ok)return c.close();c.answer();
+  p.on('call',c=>{const t=C[c.peer];if(!t||!t.ok)return c.close();c.answer();t.call=c;
     c.on('stream',s=>{t.video.srcObject=s;t.video.muted=focus!==t.id;t.video.play().catch(()=>{})})});
   p.on('disconnected',()=>p.reconnect());
   p.on('error',e=>{if(e.type==='unavailable-id')setTimeout(()=>{if(vpeer===p){p.destroy();vpeer=null;vStart()}},4000);else if(e.type!=='peer-unavailable')toast('連線錯誤：'+e.type)});
 }
 $('#vAdd').onclick=()=>showPbox($('#pbox').classList.contains('hide'));
 $('#pcp').onclick=()=>copy($('#plk').value);
-$('#bTorch').onclick=()=>{torchOn=!torchOn;sendF({t:'torch',v:torchOn})};
+$('#bTorch').onclick=()=>{const t=T();if(!t)return;const on=!t.info.torchOn;t.info.torchOn=on;ctlInfo(t);sendF({t:'torch',v:on})};
 $('#bSw').onclick=()=>sendF({t:'switch'});
+$('#bRst').onclick=()=>{sendF({t:'restart'});toast('已要求攝影機重啟')};
 $('#zm').oninput=e=>sendF({t:'zoom',v:+e.target.value});
-$('#bMute').onclick=()=>{const t=T();if(t){t.video.muted=!t.video.muted;$('#bMute').textContent=t.video.muted?'🔇':'🔊'}};
+$('#bMute').onclick=()=>{const t=T();if(t){t.video.muted=!t.video.muted;$('#bMute').textContent=(t.video.muted?'🔇':'🔊')+' 聲音'}};
 $('#bFs').onclick=()=>{const t=T();t&&t.video.requestFullscreen&&t.video.requestFullscreen()};
 $('#bSnap').onclick=()=>{const v=T()&&T().video;if(!v||!v.videoWidth)return;const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
-  c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='snap-'+Date.now()+'.jpg';a.click()},'image/jpeg',.92)};
+  c.toBlob(b=>saveBlob(b,'snap-'+Date.now()+'.jpg'),'image/jpeg',.92)};
 $('#bEv').onclick=async()=>{const t=T();if(!t||!t.ok)return toast('攝影機離線');
-  const list=await new Promise(r=>{pend.ev=r;sendF({t:'events'})});
-  openEv(list,id=>new Promise(r=>{pend['c'+id]=r;sendF({t:'getclip',id})}),id=>sendF({t:'delclip',id}))};
+  let list;try{list=await withTO(new Promise(r=>{pend.ev=r;sendF({t:'events'})}),8000)}catch(e){return toast('讀取事件失敗：'+e.message)}
+  openEv(list,id=>withTO(new Promise(r=>{pend['c'+id]=r;sendF({t:'getclip',id})}),45000),id=>sendF({t:'delclip',id}),false)};
 const tk=$('#bTalk');
-tk.onpointerdown=async e=>{e.preventDefault();if(!focus)return;try{
-  if(!mic)mic=await navigator.mediaDevices.getUserMedia({audio:true});
-  if(tcall&&tcall.peer!==focus){tcall.close();tcall=null}
-  if(!tcall){tcall=vpeer.call(focus,mic);tcall.on('close',()=>{tcall=null})}
-  mic.getAudioTracks().forEach(t=>t.enabled=true);tk.classList.add('r')}catch(x){toast('麥克風失敗：'+x.message)}};
-tk.onpointerup=tk.onpointercancel=tk.onpointerleave=()=>{mic&&mic.getAudioTracks().forEach(t=>t.enabled=false);tk.classList.remove('r')};
+tk.onpointerdown=async e=>{e.preventDefault();if(!focus||!V.talk)return;holding=true;tk.setPointerCapture&&tk.setPointerCapture(e.pointerId);tk.classList.add('r');
+  try{if(!mic)mic=await navigator.mediaDevices.getUserMedia({audio:true});
+    if(tcall&&tcall.peer!==focus){tcall.close();tcall=null}
+    if(!tcall){tcall=vpeer.call(focus,mic);tcall.on('close',()=>{tcall=null})}
+    mic.getAudioTracks().forEach(t=>t.enabled=holding)}  // 權限視窗期間若已放開，保持關閉
+  catch(x){holding=false;tk.classList.remove('r');toast('麥克風失敗：'+x.message)}};
+const talkUp=()=>{holding=false;mic&&mic.getAudioTracks().forEach(t=>t.enabled=false);tk.classList.remove('r')};
+tk.onpointerup=tk.onpointercancel=tk.onlostpointercapture=talkUp;
 
 // ================= 設定與啟動 =================
-$('#bSet').onclick=()=>{const m=LS.get('mode',null);$('#sCamF').classList.toggle('hide',m!=='cam');$('#sVwrF').classList.toggle('hide',m!=='vwr');
-  $('#sName').value=S.name;$('#sMot').checked=S.motion;$('#sSens').value=S.sens;$('#sRec').checked=S.rec;$('#sNtfy').value=S.ntfy;$('#sWan').checked=LS.get('wan',false);$('#sd').showModal()};
-$('#sd').oninput=()=>{S.name=$('#sName').value||S.name;S.motion=$('#sMot').checked;S.sens=+$('#sSens').value;S.rec=$('#sRec').checked;S.ntfy=$('#sNtfy').value.trim();saveS();if(!S.motion)prev=null};
+async function fillLens(){const ds=await vdevs().catch(()=>[]),s=$('#sLens');
+  s.innerHTML='<option value="">自動（'+(S.face==='user'?'前':'後')+'鏡頭）</option>'+ds.map((d,i)=>`<option value="${esc(d.deviceId)}">${esc(d.label||'鏡頭 '+(i+1))}</option>`).join('');s.value=S.dev||''}
+$('#bSet').onclick=async()=>{const m=LS.get('mode',null);$('#sCamF').classList.toggle('hide',m!=='cam');$('#sVwrF').classList.toggle('hide',m!=='vwr');
+  $('#sName').value=S.name;$('#sMic').checked=S.mic;$('#sMot').checked=S.motion;$('#sSens').value=S.sens;$('#sConf').value=S.conf;$('#sTail').value=S.tail;$('#sRec').checked=S.rec;$('#sRq').value=S.rq;$('#sMax').value=S.maxMB;$('#sNtfy').value=S.ntfy;
+  $('#sTalk').checked=V.talk;$('#sWan').checked=LS.get('wan',false);$('#sd').showModal();
+  if(m==='cam'){fillLens();$('#sStore').textContent=await storeTxt()}};
+$('#sd').oninput=e=>{if(e.target.id==='sLens'||e.target.id==='sTalk')return;
+  S.name=$('#sName').value||S.name;S.motion=$('#sMot').checked;S.sens=+$('#sSens').value;S.conf=+$('#sConf').value;S.tail=+$('#sTail').value;S.rec=$('#sRec').checked;S.rq=$('#sRq').value;S.maxMB=+$('#sMax').value;S.ntfy=$('#sNtfy').value.trim();saveS();
+  if(!S.motion)prev=null;if(S.rec&&running)segLoop();if(!S.rec){ring=[];stopSeg()}};
+$('#sMic').onchange=e=>{S.mic=e.target.checked;saveS();if(running)getCam().then(()=>authed.forEach(sendInfo)).catch(x=>toast('相機失敗：'+x.message))};
+$('#sLens').onchange=e=>{S.dev=e.target.value;saveS();if(running)getCam().then(()=>authed.forEach(sendInfo)).catch(x=>toast('切換失敗：'+x.message))};
+$('#sTalk').onchange=e=>{V.talk=e.target.checked;LS.set('vtalk',V.talk);if(!V.talk){talkUp();mic&&mic.getTracks().forEach(t=>t.stop());mic=null;tcall&&tcall.close()}T()&&ctlInfo(T())};
 $('#sWan').onchange=e=>{LS.set('wan',e.target.checked);location.reload()};
-$('#sPin').onclick=()=>{vpin=newPin();LS.set('vpin',vpin);showPbox(true);toast('配對碼已更新，已配對的攝影機需重新掃描')};
+$('#sPin').onclick=()=>{regenPin(true);showPbox(true);toast('已產生新配對碼（已配對的攝影機不受影響）')};
 $('#sRole').onclick=()=>{LS.set('mode',null);location.reload()};
 $('#sClose').onclick=()=>$('#sd').close();
+$('#sMask').onclick=()=>{const c=$('#mkc'),x=c.getContext('2d');c.width=320;c.height=240;x.fillStyle='#000';x.fillRect(0,0,320,240);if(pv.videoWidth)x.drawImage(pv,0,0,320,240);
+  const g=$('#mkg');g.innerHTML='';S.mask.forEach((v,i)=>{const e=document.createElement('i');e.className=v?'x':'';e.onclick=()=>{S.mask[i]=S.mask[i]?0:1;e.className=S.mask[i]?'x':'';saveS();prev=null};g.append(e)});$('#mkd').showModal()};
+$('#mkclr').onclick=()=>{S.mask.fill(0);saveS();prev=null;document.querySelectorAll('#mkg i').forEach(e=>e.className='')};
+$('#mkok').onclick=()=>$('#mkd').close();
 function enterCam(auto){LS.set('mode','cam');show('cam');viewers();if(auto||pairs.length)camStart()}
-function enterVwr(){LS.set('mode','vwr');show('vwr');vStart();LS.get('kc',[]).forEach(k=>tile(k.id,k.name));Object.values(C).forEach(upd);showPbox(!Object.keys(C).length)}
+function enterVwr(){LS.set('mode','vwr');show('vwr');vStart();LS.get('kc',[]).forEach(k=>tile(k.id,k.name,{tok:k.tok,last:k.last,group:k.group}));Object.values(C).forEach(upd);updCount();renderBar();layout();showPbox(!Object.keys(C).length)}
 $('#mCam').onclick=()=>enterCam(false);$('#mVwr').onclick=enterVwr;
 
 const hp=new URLSearchParams(location.hash.slice(1));let fromLink=false;
 if(hp.get('v')&&hp.get('k')){addPair({id:hp.get('v'),pin:hp.get('k'),name:hp.get('n')||'檢視器'});LS.set('mode','cam');history.replaceState(null,'',location.pathname);fromLink=true}
 const m0=LS.get('mode',null);m0==='cam'?enterCam(fromLink):m0==='vwr'?enterVwr():show('home');
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(r=>{r.onupdatefound=()=>{const w=r.installing;w&&(w.onstatechange=()=>{if(w.state==='installed'&&navigator.serviceWorker.controller&&confirm('有新版本，立即更新？'))location.reload()})}}).catch(()=>{});
 </script>
 </body>
 </html>
