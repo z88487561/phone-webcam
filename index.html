@@ -155,7 +155,7 @@ async function boost(c,q){try{const sn=c.peerConnection.getSenders().find(s=>s.t
   if(!p.encodings||!p.encodings.length)p.encodings=[{}];p.encodings[0].maxBitrate=br;p.encodings[0].scaleResolutionDownBy=sc;p.degradationPreference='maintain-resolution';await sn.setParameters(p)}catch(e){}}
 
 // ---- IndexedDB（錄影；每段事件 = 多個可獨立播放的小檔 parts）----
-const DB=new Promise(r=>{const q=indexedDB.open('pwcam',2);q.onupgradeneeded=()=>{const d=q.result;if(d.objectStoreNames.contains('clips'))d.deleteObjectStore('clips');d.createObjectStore('clips',{keyPath:'id',autoIncrement:true})};q.onsuccess=()=>r(q.result)});
+const DB=new Promise(r=>{const q=indexedDB.open('pwcam',2);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains('clips'))d.createObjectStore('clips',{keyPath:'id',autoIncrement:true})};q.onsuccess=()=>r(q.result)});
 const tx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction('clips',m),q=f(t.objectStore('clips'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})};
 const evList=async()=>(await tx('readonly',s=>s.getAll())).map(r=>({id:r.id,ts:r.ts,dur:r.dur,size:r.size})).reverse();
 async function storeTxt(){const all=await tx('readonly',s=>s.getAll()),used=all.reduce((a,r)=>a+r.size,0);let q='';
