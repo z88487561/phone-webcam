@@ -1,4 +1,4 @@
-const V='pwcam-v4',SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const V='pwcam-v5',SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('pwcam-')&&x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 const put=(r,n)=>{if(n.ok){const c=n.clone();caches.open(V).then(x=>x.put(r,c))}return n};
