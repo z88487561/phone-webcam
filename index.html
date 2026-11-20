@@ -594,9 +594,12 @@ async function wipeApp(){
   try{(await DB).close()}catch(e){}
   await new Promise(r=>{try{const q=indexedDB.deleteDatabase('pwcam');q.onsuccess=q.onerror=q.onblocked=()=>r()}catch(e){r()}});
   try{Object.keys(localStorage).filter(k=>k.startsWith(LSP)).forEach(k=>localStorage.removeItem(k))}catch(e){}
-  try{if('caches' in window)for(const k of await caches.keys())if(k.startsWith('pwcam-'))await caches.delete(k)}catch(e){}
+  // 先解除 Service Worker，再刪快取（刪兩輪），避免 SW 在快取刪除後又把檔案寫回去
   try{if('serviceWorker' in navigator){const r=await navigator.serviceWorker.getRegistration();if(r)await r.unregister()}}catch(e){}
-  document.body.innerHTML='<div style="padding:32px 20px;text-align:center;line-height:1.7"><h2>已清除本程式的資料</h2><p>請關閉這個視窗，並從桌面／主畫面長按圖示刪除。<br>再次開啟網址即可重新使用。</p></div>'}
+  const delC=async()=>{try{if('caches' in window)for(const k of await caches.keys())if(k.startsWith('pwcam-'))await caches.delete(k)}catch(e){}};
+  await delC();await new Promise(r=>setTimeout(r,400));await delC();
+  document.documentElement.style.background=document.body.style.background='#fff';
+  document.body.innerHTML='<div style="padding:32px 20px;text-align:center;line-height:1.7;color:#222"><h2>已清除本程式的資料</h2><p>請關閉這個視窗，並從桌面／主畫面長按圖示刪除。<br>再次開啟網址即可重新使用。</p></div>'}
 $('#sWipe').onclick=()=>{if(confirm('將刪除本程式的設定、配對資訊與所有錄影（無法復原），並移除離線快取。\n同網站下的其他 PWA 不受影響。\n\n確定要清除？'))wipeApp()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(r=>{r.onupdatefound=()=>{const w=r.installing;w&&(w.onstatechange=()=>{if(w.state==='installed'&&navigator.serviceWorker.controller&&confirm('有新版本，立即更新？'))location.reload()})}}).catch(()=>{});
 </script>
