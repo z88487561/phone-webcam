@@ -59,3 +59,9 @@ https://z88487561.github.io/phone-webcam/
 - `sw.js`：PWA Service Worker 與離線快取。
 - `manifest.webmanifest`：PWA 安裝資訊。
 - `icon-192.png`、`icon-512.png`：應用程式圖示。
+
+## 安裝與解除安裝
+
+- 瀏覽器支援時，標題列會出現 📲 安裝按鈕，設定裡也有「App 安裝」區；iOS 需用 Safari 的「加入主畫面」。
+- 設定 →「清除資料並解除安裝」只會清除本程式的資料（`pwcam:` 開頭的 localStorage、`pwcam` IndexedDB、`pwcam-` 開頭的快取與本程式的 Service Worker），不影響同網域下的其他 PWA。網頁無法自行移除圖示，清除後請手動刪除。
+- 與其他 PWA 共用 `github.io` 網域，因此所有儲存名稱都要加專屬前綴。

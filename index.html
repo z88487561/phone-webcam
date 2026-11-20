@@ -59,7 +59,7 @@ input[type=range]{width:100%;padding:0}
 </style>
 </head>
 <body>
-<header><h1 id="ttl">手機攝影機</h1><button id="bSet" aria-label="設定">⚙️</button></header>
+<header><h1 id="ttl">手機攝影機</h1><button id="bInst" class="hide" aria-label="安裝">📲</button><button id="bSet" aria-label="設定">⚙️</button></header>
 <main>
 <section id="home" class="hide"><div class="card"><h2>這支手機要做什麼？</h2>
   <div class="row"><button class="p" id="mCam">📷 當攝影機</button><button id="mVwr">📺 當檢視器</button></div>
@@ -113,6 +113,9 @@ input[type=range]{width:100%;padding:0}
     <div class="row"><button id="sPin">立即重新產生配對碼</button></div>
   </div>
   <label><input type="checkbox" id="sWan"> 允許跨網路（使用 STUN；嚴格 NAT 需自備 TURN）</label>
+  <div class="card" style="margin-top:12px"><h2>App 安裝</h2><div class="mut" id="sInstT"></div>
+    <div class="row"><button class="p hide" id="sInst">📲 安裝到桌面／主畫面</button><button class="r" id="sWipe">🗑️ 清除資料並解除安裝</button></div>
+    <div class="mut">網頁無法自行移除圖示：清除後請長按圖示刪除（電腦版 Chrome：App 視窗選單 → 解除安裝）。只會清除本程式的資料，不影響同網站下的其他 PWA。</div></div>
   <div class="row"><button id="sRole">切換角色</button><button id="sClose" class="p">完成</button></div>
 </dialog>
 <dialog id="mkd"><h2>忽略區域</h2><div class="mut">點格子標記為忽略（紅色），這些區域的變化不會觸發動態。</div>
@@ -134,7 +137,12 @@ input[type=range]{width:100%;padding:0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// localStorage 與同網域的其他 PWA 共用，所以一律加前綴；解除時只清這個前綴
+const LSP='pwcam:';
+const LS={get:(k,d)=>{try{const v=localStorage.getItem(LSP+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{if(LS.off)return;try{localStorage.setItem(LSP+k,JSON.stringify(v))}catch(e){}}};
+(()=>{try{if(localStorage.getItem(LSP+'_mig'))return; // 一次性：把舊的無前綴 key 搬到新前綴
+  ['camid','cs','kc','mode','pairs','vgf','vid','vlay','vord','vsort','vtalk','wan'].forEach(k=>{const v=localStorage.getItem(k);if(v!=null){if(localStorage.getItem(LSP+k)==null)localStorage.setItem(LSP+k,v);localStorage.removeItem(k)}});
+  localStorage.setItem(LSP+'_mig','1')}catch(e){}})();
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),3500)};
 const PC=()=>({config:{iceServers:LS.get('wan',false)?[{urls:'stun:stun.l.google.com:19302'}]:[]}});
 const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
@@ -545,7 +553,7 @@ async function fillLens(){const ds=await vdevs().catch(()=>[]),s=$('#sLens');
   s.innerHTML='<option value="">自動（'+(S.face==='user'?'前':'後')+'鏡頭）</option>'+ds.map((d,i)=>`<option value="${esc(d.deviceId)}">${esc(d.label||'鏡頭 '+(i+1))}</option>`).join('');s.value=S.dev||''}
 $('#bSet').onclick=async()=>{const m=LS.get('mode',null);$('#sCamF').classList.toggle('hide',m!=='cam');$('#sVwrF').classList.toggle('hide',m!=='vwr');
   $('#sName').value=S.name;$('#sMic').checked=S.mic;$('#sMot').checked=S.motion;$('#sSens').value=S.sens;$('#sConf').value=S.conf;$('#sTail').value=S.tail;$('#sRec').checked=S.rec;$('#sRq').value=S.rq;$('#sMax').value=S.maxMB;$('#sNtfy').value=S.ntfy;
-  $('#sTalk').checked=V.talk;$('#sWan').checked=LS.get('wan',false);$('#sd').showModal();
+  $('#sTalk').checked=V.talk;$('#sWan').checked=LS.get('wan',false);updInst();$('#sd').showModal();
   if(m==='cam'){fillLens();$('#sStore').textContent=await storeTxt()}};
 $('#sd').oninput=e=>{if(e.target.id==='sLens'||e.target.id==='sTalk')return;
   S.name=$('#sName').value||S.name;S.motion=$('#sMot').checked;S.sens=+$('#sSens').value;S.conf=+$('#sConf').value;S.tail=+$('#sTail').value;S.rec=$('#sRec').checked;S.rq=$('#sRq').value;S.maxMB=+$('#sMax').value;S.ntfy=$('#sNtfy').value.trim();saveS();
@@ -568,6 +576,28 @@ $('#mCam').onclick=()=>enterCam(false);$('#mVwr').onclick=enterVwr;
 const hp=new URLSearchParams(location.hash.slice(1));let fromLink=false;
 if(hp.get('v')&&hp.get('k')){addPair({id:hp.get('v'),pin:hp.get('k'),name:hp.get('n')||'檢視器'});LS.set('mode','cam');history.replaceState(null,'',location.pathname);fromLink=true}
 const m0=LS.get('mode',null);m0==='cam'?enterCam(fromLink):m0==='vwr'?enterVwr():show('home');
+// ---- 安裝／解除安裝 ----
+let dip=null;
+const isSA=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function updInst(){const b=$('#sInst'),t=$('#sInstT'),sa=isSA();
+  b.classList.toggle('hide',sa||!dip);$('#bInst').classList.toggle('hide',sa||!dip);
+  t.textContent=sa?'已安裝（目前以 App 模式開啟）':dip?'可安裝到桌面／主畫面':isIOS()?'iPhone／iPad：Safari 分享 → 加入主畫面':'請用瀏覽器選單的「安裝應用程式」（若已安裝，可能偵測不到）'}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;updInst()});
+addEventListener('appinstalled',()=>{dip=null;updInst();toast('已安裝')});
+$('#sInst').onclick=$('#bInst').onclick=async()=>{if(!dip)return;dip.prompt();try{await dip.userChoice}catch(e){}dip=null;updInst()};
+async function wipeApp(){
+  LS.off=true; // 停止之後的寫入，避免清完又被寫回
+  try{if(stream)stream.getTracks().forEach(t=>t.stop())}catch(e){}
+  try{document.querySelectorAll('video,audio').forEach(v=>v.srcObject&&v.srcObject.getTracks().forEach(t=>t.stop()))}catch(e){}
+  try{cpeer&&cpeer.destroy()}catch(e){}try{vpeer&&vpeer.destroy()}catch(e){}
+  try{(await DB).close()}catch(e){}
+  await new Promise(r=>{try{const q=indexedDB.deleteDatabase('pwcam');q.onsuccess=q.onerror=q.onblocked=()=>r()}catch(e){r()}});
+  try{Object.keys(localStorage).filter(k=>k.startsWith(LSP)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{if('caches' in window)for(const k of await caches.keys())if(k.startsWith('pwcam-'))await caches.delete(k)}catch(e){}
+  try{if('serviceWorker' in navigator){const r=await navigator.serviceWorker.getRegistration();if(r)await r.unregister()}}catch(e){}
+  document.body.innerHTML='<div style="padding:32px 20px;text-align:center;line-height:1.7"><h2>已清除本程式的資料</h2><p>請關閉這個視窗，並從桌面／主畫面長按圖示刪除。<br>再次開啟網址即可重新使用。</p></div>'}
+$('#sWipe').onclick=()=>{if(confirm('將刪除本程式的設定、配對資訊與所有錄影（無法復原），並移除離線快取。\n同網站下的其他 PWA 不受影響。\n\n確定要清除？'))wipeApp()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(r=>{r.onupdatefound=()=>{const w=r.installing;w&&(w.onstatechange=()=>{if(w.state==='installed'&&navigator.serviceWorker.controller&&confirm('有新版本，立即更新？'))location.reload()})}}).catch(()=>{});
 </script>
 </body>
