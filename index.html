@@ -121,7 +121,11 @@ input[type=range]{width:100%;padding:0}
 <dialog id="mkd"><h2>忽略區域</h2><div class="mut">點格子標記為忽略（紅色），這些區域的變化不會觸發動態。</div>
   <div id="mkw"><canvas id="mkc"></canvas><div class="mg" id="mkg"></div></div>
   <div class="row"><button id="mkclr">全部清除</button><button id="mkok" class="p">完成</button></div></dialog>
-<dialog id="scd"><h2>掃描檢視器上的 QR</h2><video id="scv" autoplay muted playsinline></video><div class="row"><button id="scx">取消</button></div></dialog>
+<dialog id="scd"><h2>掃描檢視器上的 QR</h2><video id="scv" autoplay muted playsinline style="width:100%;border-radius:8px;background:#000"></video>
+  <div class="row"><label for="scl">鏡頭</label><select id="scl" style="flex:1;min-width:0"></select></div>
+  <div class="row hide" id="sczr"><label for="scz">縮放</label><input type="range" id="scz" style="flex:1"></div>
+  <div class="mut">掃不到時：換鏡頭（避開超廣角／微距）、把檢視器的 QR 放大、拉遠一點讓它對焦。</div>
+  <div class="row"><button id="scx">取消</button></div></dialog>
 <dialog id="evd"><h2>錄影事件</h2><div class="mut" id="evstore"></div>
   <div class="row" id="evtools"><button id="evzip">⬇ 匯出全部 ZIP</button><button id="evclr" class="r">全部刪除</button></div>
   <video id="evv" controls playsinline class="hide"></video>
@@ -358,19 +362,42 @@ function stopSeg(){clearTimeout(segT);if(sr&&sr.state==='recording')try{sr.stop(
 function startClip(){if(clip||!S.rec||!MIME)return;const n=ring.length;clip={ts:Date.now()-n*SEG*1000,parts:ring.splice(0),dur:n*SEG,end:false,t0:Date.now(),mime:MIME}}
 
 // ---- 掃描檢視器 QR ----
-let scanT=null,scanS=null,scanX;
+let scanT=null,scanS=null,scanX,scanBusy=false,bd=null;
+try{if('BarcodeDetector' in window)bd=new BarcodeDetector({formats:['qr_code']})}catch(e){}
 function stopScan(){clearInterval(scanT);clearTimeout(scanX);scanT=null;if(scanS){scanS.getTracks().forEach(t=>t.stop());scanS=null}$('#scd').open&&$('#scd').close()}
 function scanLoop(v){
-  clearInterval(scanT);clearTimeout(scanX);scanX=setTimeout(stopScan,30000);
+  clearInterval(scanT);clearTimeout(scanX);scanX=setTimeout(stopScan,60000);
   const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
-  scanT=setInterval(()=>{if(!v.videoWidth)return;c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
-    const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height),p=r&&parsePair(r.data);
-    if(p){stopScan();addPair(p);toast('已掃描：'+p.name);camStart()}},250);
+  const hit=t=>{const p=parsePair(t);if(p){stopScan();addPair(p);toast('已掃描：'+p.name);camStart()}};
+  scanT=setInterval(async()=>{if(scanBusy||!v.videoWidth)return;scanBusy=true;
+    try{
+      if(bd){const r=await bd.detect(v);if(r.length){hit(r[0].rawValue);return}}
+      const k=Math.min(1,1280/v.videoWidth);c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);x.drawImage(v,0,0,c.width,c.height);
+      const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:'attemptBoth'});
+      if(r)hit(r.data);
+    }catch(e){}finally{scanBusy=false}},250);
 }
+async function openScanCam(dev){
+  if(scanS){scanS.getTracks().forEach(t=>t.stop());scanS=null}
+  const base={width:{ideal:1920},height:{ideal:1080}};
+  const tryC=[dev?{...base,deviceId:{exact:dev}}:null,{...base,facingMode:{ideal:'environment'}}].filter(Boolean);
+  let err;for(const c of tryC){try{scanS=await navigator.mediaDevices.getUserMedia({video:c});break}catch(e){err=e}}
+  if(!scanS)throw err;
+  const vt=scanS.getVideoTracks()[0],cp=vt.getCapabilities?vt.getCapabilities():{};
+  if(cp.focusMode&&cp.focusMode.includes('continuous'))vt.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+  const z=$('#scz');$('#sczr').classList.toggle('hide',!cp.zoom);
+  if(cp.zoom){z.min=cp.zoom.min;z.max=cp.zoom.max;z.step=cp.zoom.step||0.1;z.value=vt.getSettings().zoom||cp.zoom.min}
+  $('#scv').srcObject=scanS;
+  const cur=vt.getSettings().deviceId,ds=await vdevs().catch(()=>[]),sl=$('#scl');
+  sl.innerHTML=ds.map((d,i)=>`<option value="${esc(d.deviceId)}">${esc(d.label||'鏡頭 '+(i+1))}</option>`).join('');sl.value=cur||'';
+}
+$('#scl').onchange=async e=>{LS.set('scanDev',e.target.value);try{await openScanCam(e.target.value)}catch(x){toast('切換鏡頭失敗：'+x.message)}};
+$('#scz').oninput=e=>{const vt=scanS&&scanS.getVideoTracks()[0];vt&&vt.applyConstraints({advanced:[{zoom:+e.target.value}]}).catch(()=>{})};
+$('#scd').addEventListener('close',()=>{if(scanS){scanS.getTracks().forEach(t=>t.stop());scanS=null}clearInterval(scanT)});
 $('#cScan').onclick=async()=>{
   if(running){toast('把鏡頭對準檢視器上的 QR…');return scanLoop(pv)}
-  try{scanS=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})}catch(e){return toast('相機失敗：'+e.message)}
-  $('#scv').srcObject=scanS;$('#scd').showModal();scanLoop($('#scv'));
+  try{await openScanCam(LS.get('scanDev',''))}catch(e){return toast('相機失敗：'+e.message)}
+  $('#scd').showModal();scanLoop($('#scv'));
 };
 $('#scx').onclick=stopScan;
 $('#addb').onclick=()=>{const p=parsePair($('#addin').value);if(!p)return toast('連結無效');$('#addin').value='';addPair(p);camStart()};
